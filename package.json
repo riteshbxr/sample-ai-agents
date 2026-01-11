@@ -1,0 +1,75 @@
+{
+  "name": "ai-agents-demo",
+  "version": "1.0.0",
+  "description": "Modern AI agents demo using OpenAI and Claude APIs",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/menu.js",
+    "menu": "node src/menu.js",
+    "demo:interactive-chat": "node src/examples/sdk-usage/interactive-chat.js",
+    "demo:chat": "node src/examples/sdk-usage/simple-chat.js",
+    "demo:streaming": "node src/examples/sdk-usage/streaming-example.js",
+    "demo:multi-model": "node src/examples/sdk-usage/multi-model-example.js",
+    "demo:structured": "node src/examples/sdk-usage/structured-output-example.js",
+    "demo:assistants": "node src/examples/sdk-usage/assistants-api-example.js",
+    "demo:claude-assistants": "node src/examples/sdk-usage/claude-assistants-example.js",
+    "demo:embeddings": "node src/examples/sdk-usage/embeddings-example.js",
+    "demo:vision": "node src/examples/sdk-usage/vision-example.js",
+    "demo:unified-client": "node src/examples/sdk-usage/unified-client-example.js",
+    "demo:agent": "node src/examples/strategies/agent-example.js",
+    "demo:rag": "node src/examples/strategies/rag-example.js",
+    "demo:multi-agent": "node src/examples/strategies/multi-agent/multi-agent-example.js",
+    "demo:a2a-agent": "node src/examples/strategies/a2a-agent/a2a-agent-example.js",
+    "demo:error-handling": "node src/examples/strategies/error-handling/error-handling-example.js",
+    "demo:cost-tracking": "node src/examples/strategies/cost-tracking/cost-tracking-example.js",
+    "demo:batch": "node src/examples/strategies/batch/batch-example.js",
+    "demo:memory": "node src/examples/strategies/memory/memory-example.js",
+    "demo:prompts": "node src/examples/strategies/prompt-techniques-example.js",
+    "demo:workflow": "node src/examples/strategies/workflow/workflow-example.js",
+    "demo:security": "node src/examples/strategies/security/security-example.js",
+    "demo:caching": "node src/examples/strategies/caching/caching-example.js",
+    "demo:tokens": "node src/examples/strategies/token-optimization/token-optimization-example.js",
+    "demo:evaluation": "node src/examples/strategies/evaluation/evaluation-example.js",
+    "demo:langgraph": "node src/examples/sdk-usage/langgraph-example.js",
+    "demo:langfuse": "node src/examples/sdk-usage/langfuse-example.js",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\"",
+    "validate": "npm run lint && npm run format:check",
+    "prepare": "husky install || true"
+  },
+  "keywords": [
+    "ai",
+    "openai",
+    "claude",
+    "agents",
+    "rag",
+    "function-calling"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
+    "@langchain/core": "^1.0.1",
+    "@langchain/langgraph": "^1.0.0",
+    "@langchain/openai": "^1.0.0",
+    "dotenv": "^16.3.1",
+    "langfuse": "^2.0.0",
+    "openai": "^4.24.1"
+  },
+  "devDependencies": {
+    "husky": "9.1.7",
+    "lint-staged": "16.2.7",
+    "nodemon": "^3.0.2",
+    "prettier": "3.7.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  }
+}
