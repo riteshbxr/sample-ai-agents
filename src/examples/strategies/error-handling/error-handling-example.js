@@ -1,5 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Error Handling & Retry Pattern Example
@@ -141,8 +141,8 @@ async function errorHandlingExample() {
   console.log('1️⃣ Retry with Exponential Backoff:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const resilientClient = new ResilientAIClient(openaiClient, 3, 1000);
 
     try {
@@ -165,8 +165,8 @@ async function errorHandlingExample() {
 
   async function makeRequest() {
     return circuitBreaker.execute(async () => {
-      if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-        const openaiClient = new OpenAIClient();
+      if (config.openai.apiKey) {
+        const openaiClient = createAIClient('azure-openai');
         return await openaiClient.chat([{ role: 'user', content: 'Test message' }]);
       }
       throw new Error('No API key');
@@ -224,10 +224,10 @@ async function errorHandlingExample() {
   async function chatWithFallback(messages) {
     const providers = [];
 
-    if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+    if (config.openai.apiKey) {
       providers.push('openai');
     }
-    if (process.env.ANTHROPIC_API_KEY) {
+    if (config.claude.apiKey) {
       providers.push('claude');
     }
 
@@ -235,11 +235,11 @@ async function errorHandlingExample() {
       try {
         let client;
         if (provider === 'openai') {
-          client = new OpenAIClient();
+          client = createAIClient('azure-openai');
           const response = await client.chat(messages);
           return response.choices[0].message.content;
         } else if (provider === 'claude') {
-          client = new ClaudeClient();
+          client = createAIClient('claude');
           const response = await client.chat(messages);
           return client.getTextContent(response);
         }

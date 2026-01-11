@@ -1,4 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * OpenAI Assistants API Example
@@ -8,23 +9,29 @@ import { createAIClient } from '../../clients/client-factory.js';
 async function assistantsAPIExample() {
   console.log('=== OpenAI Assistants API Example ===\n');
 
-  // Check if using Azure OpenAI (Assistants API is not supported on Azure)
-  if (process.env.AZURE_OPENAI_ENDPOINT || process.env.AZURE_OPENAI_API_KEY) {
-    console.log('⚠️  Assistants API is not available with Azure OpenAI.');
-    console.log("   The Assistants API is only available through OpenAI's direct API.");
-    console.log('\n💡 To use Assistants API:');
-    console.log('   1. Use OPENAI_API_KEY (not AZURE_OPENAI_API_KEY)');
-    console.log('   2. Remove AZURE_OPENAI_ENDPOINT from your .env file');
-    console.log('   3. Set OPENAI_API_KEY with your OpenAI API key');
-    console.log('\n   Note: Azure OpenAI supports function calling, but not the Assistants API.');
+  // Check if standard OpenAI API key is available
+  if (!config.openai.standardApiKey) {
+    if (config.openai.azure.enabled) {
+      console.log('⚠️  Assistants API is not available with Azure OpenAI.');
+      console.log("   The Assistants API is only available through OpenAI's direct API.");
+      console.log('\n💡 To use Assistants API:');
+      console.log('   1. Set OPENAI_API_KEY (not just AZURE_OPENAI_API_KEY)');
+      console.log('   2. You can keep AZURE_OPENAI_ENDPOINT for other examples');
+      console.log('   3. The Assistants API will use OPENAI_API_KEY automatically');
+      console.log('\n   Note: Azure OpenAI supports function calling, but not the Assistants API.');
+    } else {
+      console.log('⚠️  OpenAI API key required for Assistants API example');
+      console.log('   Please set OPENAI_API_KEY in your .env file');
+    }
     return;
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    console.log('⚠️  OpenAI API key required for Assistants API example');
-    console.log('   Please set OPENAI_API_KEY in your .env file');
-    console.log('   Note: Azure OpenAI does not support Assistants API');
-    return;
+  // If Azure is enabled but standard key exists, warn but allow
+  if (config.openai.azure.enabled) {
+    console.log(
+      'ℹ️  Note: Azure OpenAI is configured, but using standard OpenAI for Assistants API.'
+    );
+    console.log('   Assistants API requires OPENAI_API_KEY (not Azure OpenAI).\n');
   }
 
   const openaiClient = createAIClient('openai');
@@ -203,7 +210,7 @@ async function assistantsAPIExample() {
     }
 
     // Check if Azure is being used
-    if (process.env.AZURE_OPENAI_ENDPOINT || process.env.AZURE_OPENAI_API_KEY) {
+    if (config.openai.azure.enabled) {
       console.log('\n⚠️  Detected Azure OpenAI configuration.');
       console.log('   Assistants API is not supported on Azure OpenAI.');
       console.log('   Please use OPENAI_API_KEY instead for Assistants API.');

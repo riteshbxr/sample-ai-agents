@@ -1,4 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Multi-Model Example
@@ -14,7 +15,7 @@ async function multiModelExample() {
   console.log('='.repeat(60) + '\n');
 
   // OpenAI/Azure OpenAI Response
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     console.log('🤖 OpenAI GPT-4 Turbo:');
     console.log('-'.repeat(60));
 
@@ -32,7 +33,7 @@ async function multiModelExample() {
   }
 
   // Claude Response
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (config.claude.apiKey) {
     console.log('🤖 Claude 3.5 Sonnet:');
     console.log('-'.repeat(60));
 

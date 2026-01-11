@@ -5,6 +5,9 @@ dotenv.config();
 export const config = {
   openai: {
     apiKey: process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+    // Separate access to standard OpenAI API key (for Assistants API which requires non-Azure)
+    standardApiKey: process.env.OPENAI_API_KEY,
+    azureApiKey: process.env.AZURE_OPENAI_API_KEY,
     model: process.env.OPENAI_MODEL || process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4-turbo-preview',
     // Azure OpenAI configuration
     azure: {
@@ -24,6 +27,15 @@ export const config = {
   },
   chroma: {
     persistDirectory: process.env.CHROMA_PERSIST_DIR || './chroma_db',
+  },
+  langfuse: {
+    secretKey: process.env.LANGFUSE_SECRET_KEY,
+    publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+    host: process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com',
+  },
+  logger: {
+    level: process.env.LOG_LEVEL,
+    format: process.env.LOG_FORMAT,
   },
 };
 

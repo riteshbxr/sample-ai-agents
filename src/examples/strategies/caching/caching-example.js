@@ -1,4 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 import crypto from 'crypto';
 
 /**
@@ -136,8 +137,8 @@ async function cachingExample() {
   console.log('1️⃣ Basic Response Caching:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const cache = new ResponseCache(60000); // 1 minute TTL for demo
     const cachedClient = new CachedAIClient(openaiClient, cache);
 
@@ -167,8 +168,8 @@ async function cachingExample() {
   console.log('2️⃣ Cache Statistics:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const cache = new ResponseCache(60000);
     const cachedClient = new CachedAIClient(openaiClient, cache);
 
@@ -234,8 +235,8 @@ async function cachingExample() {
   console.log('  - Time-sensitive queries (today, now, current) bypass cache');
   console.log('  - Static queries (definitions, explanations) use cache\n');
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const cachedClient = new CachedAIClient(openaiClient, smartCache);
 
     // Static query - should cache
@@ -269,9 +270,9 @@ async function cachingExample() {
     };
   }
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     const cache = new ResponseCache();
-    const openaiClient = new OpenAIClient();
+    const openaiClient = createAIClient('azure-openai');
     const cachedClient = new CachedAIClient(openaiClient, cache);
 
     // Simulate 100 requests with 30% cache hit rate

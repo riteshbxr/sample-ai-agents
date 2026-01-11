@@ -1,5 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Structured Output Example
@@ -20,11 +20,11 @@ async function structuredOutputExample() {
   console.log('\n');
 
   // OpenAI with JSON mode
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     console.log('🤖 OpenAI - Structured JSON Output:');
     console.log('-'.repeat(60));
 
-    const openaiClient = new OpenAIClient();
+    const openaiClient = createAIClient('openai');
     const messages = [
       {
         role: 'system',
@@ -61,11 +61,11 @@ async function structuredOutputExample() {
   }
 
   // Claude with structured output (using system prompt)
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (config.claude.apiKey) {
     console.log('🤖 Claude - Structured JSON Output:');
     console.log('-'.repeat(60));
 
-    const claudeClient = new ClaudeClient();
+    const claudeClient = createAIClient('claude');
     const messages = [
       {
         role: 'user',
@@ -104,8 +104,8 @@ async function structuredOutputExample() {
   console.log('📊 Generating Structured Product Data:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('openai');
     const productPrompt = `Generate a product catalog with 3 products. Each product should have:
     - name (string)
     - price (number)

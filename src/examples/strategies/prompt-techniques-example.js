@@ -1,5 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Prompt Engineering Techniques Example
@@ -12,8 +12,8 @@ async function promptTechniquesExample() {
   console.log('1️⃣ Few-Shot Learning:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const fewShotPrompt = `
 Classify the sentiment of these customer reviews:
@@ -48,8 +48,8 @@ Sentiment:`;
   console.log('2️⃣ Chain-of-Thought Prompting:');
   console.log('-'.repeat(60));
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    const claudeClient = new ClaudeClient();
+  if (config.claude.apiKey) {
+    const claudeClient = createAIClient('claude');
 
     const cotPrompt = `Solve this step by step:
 
@@ -75,8 +75,8 @@ Let's think step by step:
   console.log('3️⃣ Role-Playing:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const rolePrompt = `You are a senior product manager at a tech startup with 10 years of experience.
 You're known for data-driven decisions and user-centric thinking.
@@ -98,8 +98,8 @@ Provide your expert advice:`;
   console.log('4️⃣ Output Formatting:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const formatPrompt = `Create a product roadmap for an AI agent platform. 
 Format the output as:
@@ -123,8 +123,8 @@ List 5 features.`;
   console.log('5️⃣ Constrained Generation:');
   console.log('-'.repeat(60));
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    const claudeClient = new ClaudeClient();
+  if (config.claude.apiKey) {
+    const claudeClient = createAIClient('claude');
 
     const constrainedPrompt = `Generate a product tagline that:
 - Is exactly 5-7 words
@@ -147,8 +147,8 @@ Generate 3 options, numbered.`;
   console.log('6️⃣ Self-Consistency (Multiple Attempts):');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const question = 'What are the top 3 AI trends for startups in 2024?';
 
@@ -174,8 +174,8 @@ Generate 3 options, numbered.`;
   console.log('7️⃣ Prompt Chaining:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     // Step 1: Generate ideas
     const ideasResponse = await openaiClient.chat([
@@ -204,8 +204,8 @@ Generate 3 options, numbered.`;
   console.log('8️⃣ Negative Prompting:');
   console.log('-'.repeat(60));
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    const claudeClient = new ClaudeClient();
+  if (config.claude.apiKey) {
+    const claudeClient = createAIClient('claude');
 
     const negativePrompt = `Write a product description for an AI email tool.
 
@@ -234,8 +234,8 @@ DO:
   console.log('9️⃣ Temperature Tuning:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const prompt = 'Write a creative tagline for an AI startup';
 
     console.log('Low temperature (0.2) - More deterministic:');
@@ -257,8 +257,8 @@ DO:
   console.log('🔟 Meta-Prompting:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const metaPrompt = `You are an expert at writing prompts for AI systems.
 

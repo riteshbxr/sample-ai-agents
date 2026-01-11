@@ -1,4 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Security & Prompt Injection Prevention Example
@@ -136,8 +137,8 @@ async function securityExample() {
   console.log('3️⃣ Testing Prompt Injection Attempts:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const injectionAttempts = [
       {

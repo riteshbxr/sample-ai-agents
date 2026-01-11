@@ -1,4 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Batch Processing Example
@@ -92,8 +93,8 @@ async function batchExample() {
   console.log('1️⃣ Parallel Chat Processing:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const processor = new BatchProcessor(openaiClient, 3);
 
     const questions = [
@@ -126,8 +127,8 @@ async function batchExample() {
   console.log('2️⃣ Batch Text Classification:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const processor = new BatchProcessor(openaiClient, 5);
 
     const texts = [
@@ -166,8 +167,8 @@ async function batchExample() {
   console.log('3️⃣ Sequential Processing (with dependencies):');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const steps = [
       { task: 'Generate a product name', prompt: 'Generate a name for an AI-powered email tool' },
@@ -238,8 +239,8 @@ async function batchExample() {
     }
   }
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const rateLimitedProcessor = new RateLimitedProcessor(openaiClient, 2);
 
     const items = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];

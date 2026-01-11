@@ -1,5 +1,5 @@
-import { OpenAIClient } from '../../../clients/openai-client.js';
-import { ClaudeClient } from '../../../clients/claude-client.js';
+import { createAIClient } from '../../../clients/client-factory.js';
+import { config } from '../../../config.js';
 
 /**
  * ReAct Agent Example
@@ -55,7 +55,7 @@ class SearchTool extends SimpleTool {
       'search',
       'Search the web for information about a topic. Use this when you need to find current information, facts, or data.',
       async ({ query }) => {
-        const client = provider === 'openai' ? new OpenAIClient() : new ClaudeClient();
+        const client = createAIClient(provider === 'openai' ? 'azure-openai' : 'claude');
         console.log(`  🔍 [Tool] Searching for: "${query}"`);
         // Simulate search results
         const response = await client.chat(
@@ -137,7 +137,7 @@ class CalculatorTool extends SimpleTool {
 class ReactAgent {
   constructor(provider = 'openai') {
     this.provider = provider;
-    this.client = provider === 'openai' ? new OpenAIClient() : new ClaudeClient();
+    this.client = createAIClient(provider === 'openai' ? 'azure-openai' : 'claude');
     this.tools = new Map();
     this.conversationHistory = [];
     this.setupTools();
@@ -359,8 +359,7 @@ async function reactAgentExample() {
   console.log('=== ReAct Agent Example ===');
   console.log('Reasoning + Acting pattern used in galactiq\n');
 
-  const provider =
-    process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
+  const provider = config.openai.apiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const agent = new ReactAgent(provider);

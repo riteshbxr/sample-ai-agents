@@ -1,6 +1,6 @@
 # AI Client Interface
 
-This directory contains AI client implementations that follow a unified interface, allowing you to use OpenAI and Claude interchangeably.
+This directory contains AI client implementations that follow a unified interface, allowing you to use OpenAI (standard and Azure) and Claude interchangeably.
 
 ## Unified Interface
 
@@ -24,17 +24,24 @@ All clients implement `AIClientInterface` which provides these common methods:
 import { createAIClient } from './clients/client-factory.js';
 
 // Create a client (automatically detects available provider)
-const client = createAIClient('openai');  // or 'claude'
+const client = createAIClient('openai');  // Standard OpenAI (non-Azure)
+const azureClient = createAIClient('azure-openai');  // Azure OpenAI (default)
+const claudeClient = createAIClient('claude');  // Claude
 ```
 
-### Direct Instantiation
+### Direct Instantiation (Not Recommended)
+
+**Note:** Always use the factory function `createAIClient()` instead of direct instantiation. The factory ensures consistent client creation and proper configuration.
 
 ```javascript
-import { OpenAIClient } from './clients/openai-client.js';
-import { ClaudeClient } from './clients/claude-client.js';
+// ✅ Recommended: Use factory
+const client = createAIClient('openai');
+const azureClient = createAIClient('azure-openai');
+const claudeClient = createAIClient('claude');
 
-const openaiClient = new OpenAIClient();
-const claudeClient = new ClaudeClient();
+// ❌ Not recommended: Direct instantiation
+// import { StandardOpenAIClient } from './clients/standard-openai-client.js';
+// const client = new StandardOpenAIClient();
 ```
 
 ### Unified Interface Example
@@ -88,12 +95,20 @@ Both formats are accepted by `chatWithTools()`.
 
 ## Provider-Specific Features
 
-### OpenAI-Only Features
+### Standard OpenAI Features (StandardOpenAIClient)
 
-- **`createAssistant(instructions, tools)`** - Create persistent assistant
+- **`createAssistant(instructions, tools)`** - Create persistent assistant (Assistants API)
 - **`createThread()`** - Create conversation thread
 - **`runAssistant(threadId, assistantId, userMessage)`** - Run assistant
 - **`getEmbeddings(input, embeddingModel)`** - Get embeddings
+- Requires: `OPENAI_API_KEY` environment variable
+
+### Azure OpenAI Features (OpenAIClient)
+
+- **`getEmbeddings(input, embeddingModel)`** - Get embeddings
+- Supports Azure-specific deployments and configurations
+- Requires: `AZURE_OPENAI_API_KEY` and `AZURE_OPENAI_ENDPOINT` environment variables
+- Note: Assistants API is not available with Azure OpenAI
 
 ### Claude-Only Features
 
@@ -145,8 +160,93 @@ See `src/examples/sdk-usage/unified-client-example.js` for complete examples.
 Check if a client implements the interface:
 
 ```javascript
+import { createAIClient } from './clients/client-factory.js';
 import { implementsAIClientInterface } from './clients/ai-client-interface.js';
 
-const client = new OpenAIClient();
+const client = createAIClient('openai');
 console.log(implementsAIClientInterface(client)); // true
 ```
+
+## Mock Client for Testing
+
+The `MockAIClient` is designed for testing without making actual API calls:
+
+```javascript
+import { MockAIClient } from './clients/mock-client.js';
+
+// Basic usage
+const mockClient = new MockAIClient({
+  defaultResponse: 'Mock AI response',
+  model: 'mock-model',
+});
+
+// Custom response handlers
+const mockClient = new MockAIClient({
+  chatHandler: async (messages, options) => {
+    // Return custom response based on messages
+    return {
+      choices: [{
+        message: { content: `Echo: ${messages[messages.length - 1].content}` }
+      }]
+    };
+  },
+  chatStreamHandler: async (messages, onChunk, options) => {
+    // Simulate streaming
+    const text = 'Streaming response';
+    for (const char of text) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      if (onChunk) onChunk(char);
+    }
+    return text;
+  },
+  getEmbeddingsHandler: async (input) => {
+    // Return custom embeddings
+    return Array.isArray(input) 
+      ? input.map(() => new Array(1536).fill(0.1))
+      : [new Array(1536).fill(0.1)];
+  }
+});
+
+// Simulate errors
+const errorMockClient = new MockAIClient({
+  simulateErrors: true
+});
+
+// Track call history
+const trackedClient = new MockAIClient();
+await trackedClient.chat([{ role: 'user', content: 'Hello' }]);
+const history = trackedClient.getCallHistory();
+console.log(history); // [{ method: 'chat', messages: [...], ... }]
+```
+
+### Mock Client Features
+
+- **No API calls**: All methods return mock responses instantly
+- **Configurable responses**: Set default responses or custom handlers
+- **Call tracking**: Track all method calls for assertions
+- **Error simulation**: Test error handling scenarios
+- **Streaming support**: Simulate streaming responses
+- **Tool calling**: Mock tool/function calling behavior
+- **Embeddings**: Generate mock embedding vectors
+- **Response formats**: Support both OpenAI and Claude response formats
+
+## Choosing the Right Client
+
+### Use StandardOpenAIClient when:
+- You need Assistants API (not available on Azure)
+- You want direct OpenAI API access
+- You have `OPENAI_API_KEY` (not Azure credentials)
+- You need the latest OpenAI features
+
+### Use OpenAIClient (Azure) when:
+- You're using Azure OpenAI service
+- You have `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_API_KEY`
+- You need Azure-specific deployments
+- You want enterprise-grade Azure integration
+
+### Use MockAIClient when:
+- Writing unit tests
+- Testing without API keys
+- Simulating different response scenarios
+- Testing error handling
+- Performance testing without API costs

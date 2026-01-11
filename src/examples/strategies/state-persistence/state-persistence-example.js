@@ -1,4 +1,5 @@
 import { createAIClient } from '../../../clients/client-factory.js';
+import { config } from '../../../config.js';
 
 /**
  * State Persistence / Checkpointing Example
@@ -304,8 +305,7 @@ async function statePersistenceExample() {
   console.log('=== State Persistence / Checkpointing Example ===');
   console.log('State management pattern from galactiq\n');
 
-  const provider =
-    process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
+  const provider = config.openai.apiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const checkpointStore = new CheckpointStore();

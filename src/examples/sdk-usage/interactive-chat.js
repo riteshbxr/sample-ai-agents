@@ -1,11 +1,10 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
 import { RAGAgent } from '../../agents/rag-agent.js';
 import readline from 'readline';
 import { cosineSimilarity } from '../../utils/similarity-utils.js';
 import { estimateTokens } from '../../utils/token-utils.js';
 import { calculateCost } from '../../utils/cost-utils.js';
+import { config } from '../../config.js';
 
 /**
  * Interactive Chat Example with Tool Support
@@ -141,16 +140,16 @@ class InteractiveChat {
       },
       async ({ query }) => {
         try {
-          const openaiClient = new OpenAIClient();
+          const openaiClient = createAIClient('openai');
           const responses = {};
 
-          if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+          if (config.openai.apiKey) {
             const openaiResp = await openaiClient.chat([{ role: 'user', content: query }]);
             responses.openai = openaiResp.choices[0].message.content.substring(0, 200);
           }
 
-          if (process.env.ANTHROPIC_API_KEY) {
-            const claudeClient = new ClaudeClient();
+          if (config.claude.apiKey) {
+            const claudeClient = createAIClient('claude');
             const claudeResp = await claudeClient.chat([{ role: 'user', content: query }]);
             responses.claude = claudeClient.getTextContent(claudeResp).substring(0, 200);
           }
@@ -552,7 +551,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
 
     // Check API key availability
     if (this.provider === 'openai') {
-      if (!process.env.AZURE_OPENAI_API_KEY && !process.env.OPENAI_API_KEY) {
+      if (!config.openai.apiKey) {
         console.log(
           '\n⚠️  OpenAI API key not found. Please set AZURE_OPENAI_API_KEY or OPENAI_API_KEY in your .env file.'
         );
@@ -560,7 +559,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
         return;
       }
     } else {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!config.claude.apiKey) {
         console.log(
           '\n⚠️  Claude API key not found. Please set ANTHROPIC_API_KEY in your .env file.'
         );
@@ -627,11 +626,7 @@ async function interactiveChatExample() {
   // Determine which provider to use based on available API keys
   let provider = 'openai';
 
-  if (
-    process.env.ANTHROPIC_API_KEY &&
-    !process.env.AZURE_OPENAI_API_KEY &&
-    !process.env.OPENAI_API_KEY
-  ) {
+  if (config.claude.apiKey && !config.openai.apiKey) {
     provider = 'claude';
   }
 

@@ -5,10 +5,10 @@
  * both OpenAI and Claude clients interchangeably.
  */
 
+import { config } from '../../config.js';
+
 import { createAIClient } from '../../clients/client-factory.js';
 import { implementsAIClientInterface } from '../../clients/ai-client-interface.js';
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
 
 /**
  * Example 1: Using the factory function to create clients
@@ -32,8 +32,7 @@ async function unifiedInterfaceExample() {
   console.log('=== Unified Interface Example ===\n');
 
   // Both clients implement the same interface
-  const provider =
-    process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
+  const provider = config.openai.apiKey ? 'openai' : 'claude';
 
   const client = createAIClient(provider);
   console.log(`Using ${provider.toUpperCase()} provider\n`);
@@ -93,8 +92,8 @@ async function providerSpecificExample() {
   console.log('=== Provider-Specific Features ===\n');
 
   // OpenAI-specific: Embeddings
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('openai');
 
     try {
       const embeddings = await openaiClient.getEmbeddings(['Hello world']);
@@ -105,8 +104,8 @@ async function providerSpecificExample() {
   }
 
   // Claude-specific: No embeddings support
-  if (process.env.ANTHROPIC_API_KEY) {
-    const claudeClient = new ClaudeClient();
+  if (config.claude.apiKey) {
+    const claudeClient = createAIClient('claude');
 
     try {
       await claudeClient.getEmbeddings(['Hello world']);
@@ -123,8 +122,8 @@ async function providerSpecificExample() {
 async function interfaceValidationExample() {
   console.log('=== Interface Validation ===\n');
 
-  const openaiClient = new OpenAIClient();
-  const claudeClient = new ClaudeClient();
+  const openaiClient = createAIClient('openai');
+  const claudeClient = createAIClient('claude');
 
   console.log('OpenAI client implements interface:', implementsAIClientInterface(openaiClient));
   console.log('Claude client implements interface:', implementsAIClientInterface(claudeClient));
@@ -138,10 +137,10 @@ async function dynamicProviderExample() {
   console.log('=== Dynamic Provider Switching ===\n');
 
   const providers = [];
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     providers.push('openai');
   }
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (config.claude.apiKey) {
     providers.push('claude');
   }
 

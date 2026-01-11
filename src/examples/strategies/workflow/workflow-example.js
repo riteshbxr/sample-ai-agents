@@ -1,4 +1,5 @@
 import { FunctionCallingAgent } from '../../agents/function-calling-agent.js';
+import { config } from '../../config.js';
 
 /**
  * Agentic Workflow Example
@@ -211,8 +212,7 @@ class WorkflowAgent {
 async function workflowExample() {
   console.log('=== Agentic Workflow Example ===\n');
 
-  const provider =
-    process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
+  const provider = config.openai.apiKey ? 'openai' : 'claude';
   const workflowAgent = new WorkflowAgent(provider);
 
   // Example 1: Linear workflow
