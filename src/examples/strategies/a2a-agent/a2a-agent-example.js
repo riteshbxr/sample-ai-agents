@@ -442,19 +442,15 @@ async function a2aAgentExample() {
 
   try {
     // Example 1: Collaborative Research
-    const researchResult = await system.collaborativeResearch(
-      'Best practices for building AI agent systems in 2024'
-    );
+    await system.collaborativeResearch('Best practices for building AI agent systems in 2024');
     console.log('\n✅ Collaborative research completed');
 
     // Example 2: Negotiation
-    const negotiationResult = await system.negotiationExample(
-      'How should we prioritize features for an AI agent platform?'
-    );
+    await system.negotiationExample('How should we prioritize features for an AI agent platform?');
     console.log('\n✅ Negotiation and consensus reached');
 
     // Example 3: Distributed Problem Solving
-    const distributedResult = await system.distributedProblemSolving(
+    await system.distributedProblemSolving(
       'Design a comprehensive AI agent architecture for enterprise use'
     );
     console.log('\n✅ Distributed problem solving completed');

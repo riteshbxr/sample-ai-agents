@@ -7,12 +7,7 @@ export class AIEvaluator {
    * Evaluate response quality using heuristics
    */
   static evaluateQuality(response, criteria = {}) {
-    const {
-      minLength = 10,
-      maxLength = 5000,
-      requireRelevance = true,
-      requireCompleteness = true,
-    } = criteria;
+    const { minLength = 10, maxLength = 5000 } = criteria;
 
     const issues = [];
     const score = {

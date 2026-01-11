@@ -1,9 +1,11 @@
 import { createAIClient } from '../../clients/client-factory.js';
+import { OpenAIClient } from '../../clients/openai-client.js';
+import { ClaudeClient } from '../../clients/claude-client.js';
 import { RAGAgent } from '../../agents/rag-agent.js';
 import readline from 'readline';
 import { cosineSimilarity } from '../../utils/similarity-utils.js';
-import { estimateTokens, countMessages } from '../../utils/token-utils.js';
-import { calculateCost, getPricing } from '../../utils/cost-utils.js';
+import { estimateTokens } from '../../utils/token-utils.js';
+import { calculateCost } from '../../utils/cost-utils.js';
 
 /**
  * Interactive Chat Example with Tool Support
@@ -118,7 +120,7 @@ class InteractiveChat {
               temperature: 0,
             }
           );
-          const data = JSON.parse(client.getTextContent(response));
+          const data = JSON.parse(this.client.getTextContent(response));
           return { data, success: true };
         } catch (error) {
           return { error: error.message, success: false };
@@ -311,19 +313,23 @@ Use these tools when appropriate to help the user. Always explain what you're do
 
         // Use function calling if we have tools registered
         if (this.functionDefinitions.length > 0) {
-          const response = await client.chatWithTools(this.messages, this.functionDefinitions, {
-            temperature: 0.7,
-          });
+          const response = await this.client.chatWithTools(
+            this.messages,
+            this.functionDefinitions,
+            {
+              temperature: 0.7,
+            }
+          );
 
           // Handle tool use using interface methods
-          if (client.hasToolUse(response)) {
-            const toolUseBlocks = client.getToolUseBlocks(response);
+          if (this.client.hasToolUse(response)) {
+            const toolUseBlocks = this.client.getToolUseBlocks(response);
 
             // Add assistant message to conversation
             if (this.provider === 'openai') {
               const message = response.choices?.[0]?.message || {
                 role: 'assistant',
-                content: client.getTextContent(response),
+                content: this.client.getTextContent(response),
               };
               this.messages.push(message);
             } else {
@@ -383,7 +389,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
             continue;
           } else {
             // No function calls, get text content
-            fullResponse = client.getTextContent(response);
+            fullResponse = this.client.getTextContent(response);
             needsFunctionCall = false;
 
             // Add assistant message to conversation
@@ -410,13 +416,13 @@ Use these tools when appropriate to help the user. Always explain what you're do
           needsFunctionCall = false;
 
           if (this.provider === 'openai') {
-            fullResponse = await client.chatStream(this.messages, (chunk) => {
+            fullResponse = await this.client.chatStream(this.messages, (chunk) => {
               process.stdout.write(chunk);
               fullResponse += chunk;
             });
           } else {
             // Claude streaming
-            fullResponse = await client.chatStream(this.messages, (chunk) => {
+            fullResponse = await this.client.chatStream(this.messages, (chunk) => {
               process.stdout.write(chunk);
               fullResponse += chunk;
             });
@@ -567,6 +573,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
     this.initialize();
 
     // Main chat loop
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         const userInput = await this.getUserInput();

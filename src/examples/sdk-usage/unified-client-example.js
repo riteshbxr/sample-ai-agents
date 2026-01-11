@@ -17,11 +17,11 @@ async function factoryExample() {
   console.log('=== Factory Function Example ===\n');
 
   // Create OpenAI client
-  const openaiClient = createAIClient('openai');
+  createAIClient('openai');
   console.log('✅ Created OpenAI client');
 
   // Create Claude client
-  const claudeClient = createAIClient('claude');
+  createAIClient('claude');
   console.log('✅ Created Claude client\n');
 }
 

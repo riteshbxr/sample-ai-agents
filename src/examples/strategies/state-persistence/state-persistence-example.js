@@ -171,7 +171,7 @@ function createWorkflowSteps() {
     {
       name: 'research',
       description: 'Research the topic',
-      execute: async (state) => {
+      execute: async () => {
         console.log(`     Executing research...`);
         await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate work
         return { findings: 'Research findings: Topic is well-documented' };

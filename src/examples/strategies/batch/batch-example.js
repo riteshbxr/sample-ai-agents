@@ -1,5 +1,4 @@
 import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
 
 /**
  * Batch Processing Example
