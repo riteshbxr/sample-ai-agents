@@ -32,7 +32,7 @@ async function unifiedInterfaceExample() {
   console.log('=== Unified Interface Example ===\n');
 
   // Both clients implement the same interface
-  const provider = config.openai.apiKey ? 'openai' : 'claude';
+  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
 
   const client = createAIClient(provider);
   console.log(`Using ${provider.toUpperCase()} provider\n`);
@@ -92,7 +92,7 @@ async function providerSpecificExample() {
   console.log('=== Provider-Specific Features ===\n');
 
   // OpenAI-specific: Embeddings
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('openai');
 
     try {
@@ -137,7 +137,7 @@ async function dynamicProviderExample() {
   console.log('=== Dynamic Provider Switching ===\n');
 
   const providers = [];
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     providers.push('openai');
   }
   if (config.claude.apiKey) {

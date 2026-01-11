@@ -111,7 +111,7 @@ async function tokenOptimizationExample() {
   });
 
   // Actual token count from API
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const messages = [{ role: 'user', content: 'What is AI?' }];
 
@@ -179,7 +179,7 @@ async function tokenOptimizationExample() {
   });
 
   // Test with actual API
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const testQuery = 'What is machine learning?';
 

@@ -26,7 +26,7 @@ export class StandardOpenAIClient extends AIClientInterface {
     }
 
     // Standard OpenAI configuration (no Azure endpoint)
-    this.model = model || config.openai.model || 'gpt-4-turbo-preview';
+    this.model = model || config.openai.model;
     this.isAzure = false;
 
     this.client = new OpenAI({

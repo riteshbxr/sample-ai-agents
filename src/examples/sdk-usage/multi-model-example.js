@@ -15,11 +15,10 @@ async function multiModelExample() {
   console.log('='.repeat(60) + '\n');
 
   // OpenAI/Azure OpenAI Response
-  if (config.openai.apiKey) {
-    console.log('🤖 OpenAI GPT-4 Turbo:');
-    console.log('-'.repeat(60));
-
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('openai');
+    console.log(`🤖 OpenAI ${openaiClient.model || config.openai.model}:`);
+    console.log('-'.repeat(60));
     const openaiMessages = [
       {
         role: 'user',
@@ -34,10 +33,9 @@ async function multiModelExample() {
 
   // Claude Response
   if (config.claude.apiKey) {
-    console.log('🤖 Claude 3.5 Sonnet:');
-    console.log('-'.repeat(60));
-
     const claudeClient = createAIClient('claude');
+    console.log(`🤖 Claude ${claudeClient.model || config.claude.model}:`);
+    console.log('-'.repeat(60));
     const claudeMessages = [
       {
         role: 'user',

@@ -4,11 +4,26 @@ dotenv.config();
 
 export const config = {
   openai: {
-    apiKey: process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+    /**
+     * Default provider when 'openai' is specified as provider
+     * Can be 'azure-openai' or 'openai-standard'
+     * When createAIClient('openai') is called, it will use this default
+     * Set via OPENAI_DEFAULT_PROVIDER environment variable
+     * @type {'azure-openai'|'openai-standard'}
+     */
+    defaultProvider:
+      process.env.OPENAI_DEFAULT_PROVIDER ||
+      (process.env.AZURE_OPENAI_API_KEY ? 'azure-openai' : 'openai-standard'),
     // Separate access to standard OpenAI API key (for Assistants API which requires non-Azure)
     standardApiKey: process.env.OPENAI_API_KEY,
     azureApiKey: process.env.AZURE_OPENAI_API_KEY,
     model: process.env.OPENAI_MODEL || process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4-turbo-preview',
+    /**
+     * Vision model for image analysis capabilities
+     * Separate from the default chat model as vision requires specific models
+     * @type {string}
+     */
+    visionModel: process.env.OPENAI_VISION_MODEL || process.env.OPENAI_MODEL || 'gpt-4o',
     // Azure OpenAI configuration
     azure: {
       enabled: !!process.env.AZURE_OPENAI_ENDPOINT,
@@ -40,8 +55,8 @@ export const config = {
 };
 
 // Validate required API keys
-if (!config.openai.apiKey && !config.claude.apiKey) {
+if (!config.openai.azureApiKey && !config.openai.standardApiKey && !config.claude.apiKey) {
   console.warn(
-    'Warning: No API keys found. Please set AZURE_OPENAI_API_KEY or ANTHROPIC_API_KEY in .env file'
+    'Warning: No API keys found. Please set AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY in .env file'
   );
 }

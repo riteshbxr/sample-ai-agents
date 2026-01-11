@@ -93,7 +93,7 @@ async function batchExample() {
   console.log('1️⃣ Parallel Chat Processing:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const processor = new BatchProcessor(openaiClient, 3);
 
@@ -127,7 +127,7 @@ async function batchExample() {
   console.log('2️⃣ Batch Text Classification:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const processor = new BatchProcessor(openaiClient, 5);
 
@@ -167,7 +167,7 @@ async function batchExample() {
   console.log('3️⃣ Sequential Processing (with dependencies):');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const steps = [
@@ -239,7 +239,7 @@ async function batchExample() {
     }
   }
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const rateLimitedProcessor = new RateLimitedProcessor(openaiClient, 2);
 

@@ -9,7 +9,7 @@ import { config } from '../../config.js';
 async function embeddingsExample() {
   console.log('=== Standalone Embeddings Example ===\n');
 
-  if (!config.openai.apiKey) {
+  if (!config.openai.azureApiKey && !config.openai.standardApiKey) {
     console.log('⚠️ OpenAI API key required for embeddings example');
     return;
   }

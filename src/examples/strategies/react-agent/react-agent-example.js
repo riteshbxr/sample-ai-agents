@@ -359,7 +359,7 @@ async function reactAgentExample() {
   console.log('=== ReAct Agent Example ===');
   console.log('Reasoning + Acting pattern used in galactiq\n');
 
-  const provider = config.openai.apiKey ? 'openai' : 'claude';
+  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const agent = new ReactAgent(provider);

@@ -95,7 +95,8 @@ async function basicTracingExample() {
   });
 
   try {
-    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const provider =
+      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     console.log(`\n📥 User Query: "What is RAG?"`);
@@ -103,7 +104,7 @@ async function basicTracingExample() {
     // Create a generation span
     const generation = trace.generation({
       name: 'chat-completion',
-      model: provider === 'openai' ? 'gpt-4o-mini' : 'claude-3-5-sonnet-20241022',
+      model: provider === 'openai' ? config.openai.model : config.claude.model,
       modelParameters: {
         temperature: 0.7,
       },
@@ -193,7 +194,8 @@ async function multiStepTracingExample() {
   });
 
   try {
-    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const provider =
+      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     // Step 1: Research
@@ -281,7 +283,8 @@ async function scoringExample() {
   });
 
   try {
-    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const provider =
+      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     const prompt = 'Explain quantum computing in simple terms.';
@@ -441,7 +444,8 @@ async function batchTracingExample() {
   });
 
   try {
-    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const provider =
+      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     const queries = [

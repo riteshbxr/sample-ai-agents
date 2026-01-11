@@ -20,27 +20,41 @@ async function visionExample() {
     }
   }
 
-  // Example 1: Image description with OpenAI
-  console.log('1️⃣ Image Description (OpenAI GPT-4 Vision):');
-  console.log('-'.repeat(60));
+  // Helper function to create a simple test image (1x1 pixel PNG) as base64
+  // This is a minimal valid PNG that can be used for testing
+  function createTestImageBase64() {
+    // Minimal 1x1 pixel red PNG in base64
+    // This is a valid PNG that can be used for testing vision API
+    return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  }
 
-  if (config.openai.apiKey) {
-    const openaiClient = createAIClient('openai');
+  // Example 1: Image description with OpenAI
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+    // Force use of standard OpenAI for vision API (works better with vision models)
+    const openaiClient = createAIClient('openai-standard');
+    console.log(`1️⃣ Image Description (OpenAI ${config.openai.visionModel}):`);
+    console.log('-'.repeat(60));
 
     // Note: For vision, you need to provide an image URL or base64
-    // This is a mock example - replace with actual image path
+    // Try local image first, then fallback to test image
     const imagePath = './example-image.png'; // Replace with your image
 
-    // Check if image exists, otherwise use a placeholder
     let imageBase64 = null;
-    let imageUrl = null;
 
     if (fs.existsSync(imagePath)) {
       imageBase64 = encodeImage(imagePath);
-    } else {
-      // Use a sample image URL for demonstration
-      imageUrl =
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg';
+      if (imageBase64) {
+        console.log('   Using local image file');
+      }
+    }
+
+    // If no local image, use a simple test image (1x1 pixel PNG)
+    // This ensures the example works without external dependencies
+    if (!imageBase64) {
+      imageBase64 = createTestImageBase64();
+      console.log(
+        '   Using test image (1x1 pixel PNG) - replace with your own image for better results'
+      );
     }
 
     const messages = [
@@ -60,24 +74,16 @@ async function visionExample() {
                   },
                 },
               ]
-            : imageUrl
-              ? [
-                  {
-                    type: 'image_url',
-                    image_url: { url: imageUrl },
-                  },
-                ]
-              : []),
+            : []),
         ],
       },
     ];
 
     try {
       // Note: Vision models may have different model names
-      // For Azure: Use your vision deployment name
-      // For OpenAI: Use 'gpt-4-vision-preview' or 'gpt-4o'
+      // Use config.openai.visionModel for vision-specific model
       const response = await openaiClient.client.chat.completions.create({
-        model: 'gpt-4o', // or 'gpt-4-vision-preview' or your Azure vision deployment
+        model: config.openai.visionModel, // Use dedicated vision model from config
         messages,
         max_tokens: 300,
       });
@@ -85,24 +91,44 @@ async function visionExample() {
       console.log('Image Description:');
       console.log(response.choices[0].message.content);
     } catch (error) {
-      console.log('⚠️ Vision API not available or image not found');
+      console.log('⚠️ Vision API error occurred');
       console.log('   Error:', error.message);
-      console.log('   Note: Make sure you have a vision-capable model deployed');
+
+      if (error.message.includes('downloading') || error.status === 400) {
+        console.log('\n💡 Troubleshooting:');
+        console.log('   - Image URL might be inaccessible or invalid');
+        console.log('   - Try using a local image file instead (base64 encoded)');
+        console.log('   - Ensure the image URL is publicly accessible');
+        console.log('   - Some URLs may be blocked by the API');
+      } else if (error.message.includes('model') || error.message.includes('deployment')) {
+        console.log('\n💡 Troubleshooting:');
+        console.log(`   - Make sure ${config.openai.visionModel} supports vision capabilities`);
+        console.log('   - For Azure OpenAI, ensure your deployment supports vision');
+        console.log(
+          '   - Try setting OPENAI_VISION_MODEL to a vision-capable model (e.g., gpt-4o)'
+        );
+      } else {
+        console.log('\n💡 Troubleshooting:');
+        console.log(`   - Verify ${config.openai.visionModel} is a valid vision-capable model`);
+        console.log('   - Check your API key has access to vision models');
+        console.log('   - Ensure the model supports image inputs');
+      }
     }
   }
 
   console.log('\n');
 
   // Example 2: Image analysis with Claude
-  console.log('2️⃣ Image Analysis (Claude 3.5):');
-  console.log('-'.repeat(60));
-
   if (config.claude.apiKey) {
     const claudeClient = createAIClient('claude');
+    console.log(`2️⃣ Image Analysis (Claude ${claudeClient.model || config.claude.model}):`);
+    console.log('-'.repeat(60));
 
-    // Claude supports images via base64 or URLs
-    const imageUrl =
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg';
+    // Use test image (base64) to avoid URL download issues
+    const testImageBase64 = createTestImageBase64();
+    console.log(
+      '   Using test image (1x1 pixel PNG) - replace with your own image for better results'
+    );
 
     try {
       const response = await claudeClient.client.messages.create({
@@ -115,8 +141,9 @@ async function visionExample() {
               {
                 type: 'image',
                 source: {
-                  type: 'url',
-                  url: imageUrl,
+                  type: 'base64',
+                  media_type: 'image/png',
+                  data: testImageBase64,
                 },
               },
               {
@@ -142,7 +169,7 @@ async function visionExample() {
   console.log('3️⃣ Document OCR (Text Extraction):');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     // Example: Extract text from an image
     // OCR prompt would be used here with an actual image file
     console.log('OCR Prompt prepared. (Requires actual image file)');
@@ -158,8 +185,8 @@ async function visionExample() {
   if (config.claude.apiKey) {
     const claudeClient = createAIClient('claude');
 
-    const imageUrl =
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg';
+    // Use test image (base64) to avoid URL download issues
+    const testImageBase64 = createTestImageBase64();
     const questions = [
       'What type of environment is shown in this image?',
       'What colors dominate the image?',
@@ -178,8 +205,9 @@ async function visionExample() {
                 {
                   type: 'image',
                   source: {
-                    type: 'url',
-                    url: imageUrl,
+                    type: 'base64',
+                    media_type: 'image/png',
+                    data: testImageBase64,
                   },
                 },
                 {
@@ -206,7 +234,7 @@ async function visionExample() {
   console.log('5️⃣ Image Comparison:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     // Image comparison prompt would be used here with actual images
     console.log('Image comparison prompt prepared.');
     console.log('To use: Provide two image URLs or base64 encoded images');
@@ -226,8 +254,14 @@ async function visionExample() {
 
   console.log('\n💡 Vision API Usage Tips:');
   console.log('-'.repeat(60));
-  console.log('1. For OpenAI: Use gpt-4o or gpt-4-vision-preview models');
-  console.log('2. For Claude: Use claude-3-opus or claude-3-5-sonnet');
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+    console.log(
+      `1. For OpenAI: Using ${config.openai.visionModel} for vision (configured via OPENAI_VISION_MODEL)`
+    );
+  }
+  if (config.claude.apiKey) {
+    console.log(`2. For Claude: Using ${config.claude.model} (supports vision)`);
+  }
   console.log('3. Images can be provided as URLs or base64 encoded');
   console.log('4. Keep image sizes reasonable (< 20MB recommended)');
   console.log('5. For Azure OpenAI, ensure your deployment supports vision');

@@ -137,7 +137,7 @@ async function securityExample() {
   console.log('3️⃣ Testing Prompt Injection Attempts:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const injectionAttempts = [

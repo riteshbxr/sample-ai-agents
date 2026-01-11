@@ -105,7 +105,8 @@ async function analysisNode(state) {
 async function llmNode(state) {
   console.log('  🤖 [LLM Node] Processing with LLM...');
 
-  if (!config.openai.apiKey) {
+  const apiKey = config.openai.azureApiKey || config.openai.standardApiKey;
+  if (!apiKey) {
     throw new Error('AZURE_OPENAI_API_KEY or OPENAI_API_KEY is required for LangGraph LLM node');
   }
 
@@ -128,7 +129,7 @@ async function llmNode(state) {
     if (instanceName) {
       // Use AzureChatOpenAI class for Azure OpenAI
       llm = new AzureChatOpenAI({
-        azureOpenAIApiKey: config.openai.apiKey,
+        azureOpenAIApiKey: apiKey,
         azureOpenAIApiInstanceName: instanceName,
         azureOpenAIApiDeploymentName: deployment,
         azureOpenAIApiVersion: config.openai.azure.apiVersion || '2024-02-15-preview',
@@ -144,7 +145,7 @@ async function llmNode(state) {
       llm = new ChatOpenAI({
         model: deployment,
         temperature: 0.7,
-        apiKey: config.openai.apiKey,
+        apiKey: apiKey,
         baseURL: baseURL,
       });
       console.log(`  🔧 Using ChatOpenAI with Azure baseURL: ${baseURL}, deployment=${deployment}`);
@@ -152,9 +153,9 @@ async function llmNode(state) {
   } else {
     // Standard OpenAI configuration
     llm = new ChatOpenAI({
-      model: config.openai.model || 'gpt-4o-mini',
+      model: config.openai.model,
       temperature: 0.7,
-      apiKey: config.openai.apiKey,
+      apiKey: apiKey,
     });
     console.log(`  🔧 Using standard ChatOpenAI`);
   }
@@ -402,7 +403,7 @@ async function streamingWorkflowExample() {
   console.log('\n\n4️⃣ Streaming Workflow');
   console.log('='.repeat(60));
 
-  if (!config.openai.apiKey) {
+  if (!config.openai.azureApiKey && !config.openai.standardApiKey) {
     console.log('⚠️  Skipping streaming example - AZURE_OPENAI_API_KEY or OPENAI_API_KEY not set');
     return;
   }

@@ -435,7 +435,7 @@ async function a2aAgentExample() {
   console.log('=== Agent-to-Agent (A2A) Communication Example ===');
   console.log('Direct agent communication for collaborative problem-solving\n');
 
-  const provider = config.openai.apiKey ? 'openai' : 'claude';
+  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const system = new A2AMultiAgentSystem(provider);

@@ -40,7 +40,11 @@ class CostTracker {
     const usage = response.usage;
     if (!usage) return 0;
 
-    const pricing = PRICING.openai[model] || PRICING.openai['gpt-4-turbo-preview'];
+    const defaultModel = config.openai.model;
+    const pricing =
+      PRICING.openai[model] ||
+      PRICING.openai[defaultModel] ||
+      PRICING.openai['gpt-4-turbo-preview'];
     const inputCost = (usage.prompt_tokens / 1_000_000) * pricing.input;
     const outputCost = (usage.completion_tokens / 1_000_000) * pricing.output;
     const totalCost = inputCost + outputCost;
@@ -62,7 +66,11 @@ class CostTracker {
     const usage = response.usage;
     if (!usage) return 0;
 
-    const pricing = PRICING.claude[model] || PRICING.claude['claude-sonnet-4-5-20250929'];
+    const defaultModel = config.claude.model;
+    const pricing =
+      PRICING.claude[model] ||
+      PRICING.claude[defaultModel] ||
+      PRICING.claude['claude-sonnet-4-5-20250929'];
     const inputCost = (usage.input_tokens / 1_000_000) * pricing.input;
     const outputCost = (usage.output_tokens / 1_000_000) * pricing.output;
     const totalCost = inputCost + outputCost;
@@ -160,7 +168,7 @@ async function costTrackingExample() {
   const tracker = new CostTracker();
 
   // Track OpenAI requests
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     console.log('💰 Tracking OpenAI requests...');
 
     const openaiClient = createAIClient('azure-openai');
@@ -199,7 +207,7 @@ async function costTrackingExample() {
 
   // Simulate multiple requests
   console.log('\n💰 Simulating multiple requests...');
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const queries = [
       'What is machine learning?',
@@ -220,7 +228,7 @@ async function costTrackingExample() {
   // Cost optimization tips
   console.log('\n💡 Cost Optimization Tips:');
   console.log('-'.repeat(60));
-  console.log('1. Use cheaper models (gpt-3.5-turbo) for simple tasks');
+  console.log(`1. Use cheaper models (e.g., ${config.openai.model}) for simple tasks`);
   console.log('2. Set max_tokens to limit output length');
   console.log('3. Cache responses for repeated queries');
   console.log('4. Use streaming to show progress without waiting');

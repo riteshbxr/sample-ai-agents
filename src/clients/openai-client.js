@@ -3,25 +3,28 @@ import { config } from '../config.js';
 import { AIClientInterface } from './ai-client-interface.js';
 
 /**
- * OpenAI Client
+ * Azure OpenAI Client
  * Implements AIClientInterface for consistent API across providers
+ * This client is specifically for Azure OpenAI service
  *
  * @extends {AIClientInterface}
  */
-export class OpenAIClient extends AIClientInterface {
+export class AzureOpenAIClient extends AIClientInterface {
   /**
-   * Create OpenAI client instance
+   * Create Azure OpenAI client instance
    * @param {string} [model] - Optional model name (overrides config)
    */
   constructor(model = null) {
     super();
-    if (!config.openai.apiKey) {
+    // Azure OpenAI requires azureApiKey or standardApiKey
+    const apiKey = config.openai.azureApiKey || config.openai.standardApiKey;
+    if (!apiKey) {
       throw new Error('AZURE_OPENAI_API_KEY or OPENAI_API_KEY is not set in environment variables');
     }
 
     // Configure for Azure OpenAI if endpoint is provided
     const clientConfig = {
-      apiKey: config.openai.apiKey,
+      apiKey: apiKey,
     };
 
     if (config.openai.azure.enabled) {
@@ -249,7 +252,7 @@ export class OpenAIClient extends AIClientInterface {
       const embeddingDeployment = config.openai.azure.embeddingDeployment;
 
       embeddingsClient = new OpenAI({
-        apiKey: config.openai.apiKey,
+        apiKey: config.openai.azureApiKey || config.openai.standardApiKey,
         baseURL: `${endpoint}/openai/deployments/${embeddingDeployment}`,
         defaultQuery: {
           'api-version': config.openai.azure.apiVersion,

@@ -141,7 +141,7 @@ async function errorHandlingExample() {
   console.log('1️⃣ Retry with Exponential Backoff:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const resilientClient = new ResilientAIClient(openaiClient, 3, 1000);
 
@@ -165,7 +165,7 @@ async function errorHandlingExample() {
 
   async function makeRequest() {
     return circuitBreaker.execute(async () => {
-      if (config.openai.apiKey) {
+      if (config.openai.azureApiKey || config.openai.standardApiKey) {
         const openaiClient = createAIClient('azure-openai');
         return await openaiClient.chat([{ role: 'user', content: 'Test message' }]);
       }
@@ -224,7 +224,7 @@ async function errorHandlingExample() {
   async function chatWithFallback(messages) {
     const providers = [];
 
-    if (config.openai.apiKey) {
+    if (config.openai.azureApiKey || config.openai.standardApiKey) {
       providers.push('openai');
     }
     if (config.claude.apiKey) {
