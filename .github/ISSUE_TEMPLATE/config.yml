@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question
+    url: https://github.com/riteshbxr/sample-ai-agents/issues/new?template=question.md
+    about: Ask a question or get help with the project
+  - name: 📖 Documentation
+    url: https://github.com/riteshbxr/sample-ai-agents#readme
+    about: Check the project documentation

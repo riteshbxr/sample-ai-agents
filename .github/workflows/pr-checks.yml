@@ -1,0 +1,83 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  lint-and-format:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check code formatting
+        run: npm run format:check
+
+      - name: Run validation (lint + format check)
+        run: npm run validate
+
+  validate-syntax:
+    name: Validate JavaScript Syntax
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate syntax
+        run: |
+          echo "Checking for syntax errors..."
+          # Check all JS files individually
+          find src -name "*.js" -type f | while read file; do
+            echo "Checking $file..."
+            node --check "$file" || exit 1
+          done
+
+  check-node-version:
+    name: Check Node.js Version Compatibility
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Node.js version requirement
+        run: |
+          node_version=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+          if [ "$node_version" -lt 18 ]; then
+            echo "Error: Node.js 18+ is required"
+            exit 1
+          fi
+          echo "Node.js version check passed: $(node -v)"
