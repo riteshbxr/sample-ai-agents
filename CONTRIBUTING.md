@@ -17,6 +17,25 @@ Thank you for your interest in contributing to this project! This document provi
 - **Prettier**: We use Prettier for code formatting. Run `npm run format` to format code
 - **Validation**: Run `npm run validate` to check both linting and formatting
 
+### Pre-Commit Hooks
+
+**Automatic Checks**: This project uses pre-commit hooks that automatically run before each commit:
+
+- ✅ **Linting**: ESLint automatically fixes issues and validates code quality
+- ✅ **Formatting**: Prettier automatically formats your code
+- ✅ **Commit Message**: Commitlint validates your commit message format
+
+**What this means:**
+- You don't need to manually run linting/formatting before committing
+- The hooks will auto-fix issues when possible
+- Commits will be rejected if there are unfixable linting errors
+- Commits will be rejected if the commit message doesn't follow the conventional format
+
+**To bypass hooks (not recommended):**
+```bash
+git commit --no-verify
+```
+
 ### Before Submitting a PR
 
 1. ✅ Ensure all tests pass (if applicable)
@@ -27,20 +46,72 @@ Thank you for your interest in contributing to this project! This document provi
 
 ### Commit Messages
 
-Please write clear commit messages:
+We use [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages. This helps with automated versioning, changelog generation, and better project history.
+
+**Format:**
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (formatting, etc.)
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding or updating tests
+- `build`: Changes to build system or dependencies
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files
+- `revert`: Reverts a previous commit
+
+**Rules:**
 - Use the present tense ("Add feature" not "Added feature")
 - Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Limit the first line to 72 characters or less
-- Reference issues and pull requests liberally after the first line
+- Limit the subject line to 100 characters or less
+- Use lowercase for type and scope
+- Don't end the subject line with a period
+- Reference issues and pull requests in the footer
 
-Example:
+**Examples:**
+
 ```
-Add streaming support for Claude client
+feat(agents): add streaming support for Claude client
 
 Implements streaming responses for the Claude API client,
 matching the functionality already available in the OpenAI client.
+
 Fixes #123
 ```
+
+```
+fix(clients): resolve authentication error with Azure OpenAI
+
+The client was not properly handling expired tokens.
+Added automatic token refresh logic.
+
+Closes #456
+```
+
+```
+docs: update README with new examples
+
+Added documentation for the new multi-agent collaboration feature.
+```
+
+```
+refactor(utils): simplify token counting logic
+
+Extracted common patterns into reusable functions.
+Reduces code duplication by 30%.
+```
+
+**Note:** Commit messages are automatically validated using commitlint. If your commit message doesn't follow the format, the commit will be rejected.
 
 ## 🔍 Pull Request Process
 

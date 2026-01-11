@@ -38,7 +38,7 @@
     "format": "prettier --write \"src/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\"",
     "validate": "npm run lint && npm run format:check",
-    "prepare": "husky install || true"
+    "prepare": "husky"
   },
   "keywords": [
     "ai",
@@ -60,6 +60,8 @@
     "openai": "^4.24.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "20.3.1",
+    "@commitlint/config-conventional": "20.3.1",
     "eslint": "^8.57.1",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
