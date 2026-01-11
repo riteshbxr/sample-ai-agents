@@ -1,5 +1,6 @@
 import { createAIClient } from '../../clients/client-factory.js';
 import { cosineSimilarity } from '../../utils/similarity-utils.js';
+import { config } from '../../config.js';
 
 /**
  * Standalone Embeddings Example
@@ -8,7 +9,7 @@ import { cosineSimilarity } from '../../utils/similarity-utils.js';
 async function embeddingsExample() {
   console.log('=== Standalone Embeddings Example ===\n');
 
-  if (!process.env.AZURE_OPENAI_API_KEY && !process.env.OPENAI_API_KEY) {
+  if (!config.openai.apiKey) {
     console.log('⚠️ OpenAI API key required for embeddings example');
     return;
   }

@@ -1,4 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 import {
   estimateTokens as estimateTokensUtil,
   countMessages as countMessagesUtil,
@@ -110,8 +111,8 @@ async function tokenOptimizationExample() {
   });
 
   // Actual token count from API
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const messages = [{ role: 'user', content: 'What is AI?' }];
 
     const response = await openaiClient.chat(messages);
@@ -178,8 +179,8 @@ async function tokenOptimizationExample() {
   });
 
   // Test with actual API
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const testQuery = 'What is machine learning?';
 
     console.log('Testing with actual API:\n');

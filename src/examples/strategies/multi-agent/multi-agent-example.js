@@ -1,4 +1,5 @@
 import { FunctionCallingAgent } from '../../agents/function-calling-agent.js';
+import { config } from '../../config.js';
 
 /**
  * Multi-Agent Collaboration Example
@@ -6,8 +7,7 @@ import { FunctionCallingAgent } from '../../agents/function-calling-agent.js';
  */
 class MultiAgentSystem {
   constructor() {
-    const provider =
-      process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
+    const provider = config.openai.apiKey ? 'openai' : 'claude';
 
     // Research Agent - Gathers information
     this.researchAgent = new FunctionCallingAgent(provider);

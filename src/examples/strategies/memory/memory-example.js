@@ -2,8 +2,8 @@ import {
   estimateTokens as estimateTokensUtil,
   countMessages as countMessagesUtil,
 } from '../../utils/token-utils.js';
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Memory Management Example
@@ -128,8 +128,8 @@ async function memoryExample() {
   console.log('1️⃣ Conversation with Automatic Summarization:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const manager = new ConversationManager(openaiClient, 4000, 0.7);
 
     await manager.addMessage('system', 'You are a helpful assistant for a startup.');
@@ -190,8 +190,8 @@ async function memoryExample() {
     }
   }
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    const claudeClient = new ClaudeClient();
+  if (config.claude.apiKey) {
+    const claudeClient = createAIClient('claude');
     const contextManager = new ContextWindowManager(6);
 
     contextManager.addMessage('system', 'You are a coding assistant.');
@@ -255,8 +255,8 @@ async function memoryExample() {
     }
   }
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const memory = new LongTermMemory();
 
     // Store user preferences
@@ -320,7 +320,7 @@ async function memoryExample() {
 
   const persistentConv = new PersistentConversation();
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     const messages = [
       { role: 'system', content: 'You are helpful.' },
       { role: 'user', content: 'Hello!' },

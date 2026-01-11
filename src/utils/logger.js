@@ -5,6 +5,8 @@
  * Can be disabled in production or configured via environment variables.
  */
 
+import { config } from '../config.js';
+
 const LOG_LEVELS = {
   DEBUG: 0,
   INFO: 1,
@@ -18,7 +20,7 @@ const LOG_LEVELS = {
  * @returns {number} Log level
  */
 function getLogLevel() {
-  const envLevel = process.env.LOG_LEVEL?.toUpperCase();
+  const envLevel = config.logger.level?.toUpperCase();
   if (envLevel === 'DEBUG') return LOG_LEVELS.DEBUG;
   if (envLevel === 'INFO') return LOG_LEVELS.INFO;
   if (envLevel === 'WARN') return LOG_LEVELS.WARN;
@@ -46,7 +48,7 @@ function formatLog(level, context, message, metadata = {}) {
   };
 
   // Use JSON format if LOG_FORMAT=json, otherwise use readable format
-  if (process.env.LOG_FORMAT === 'json') {
+  if (config.logger.format === 'json') {
     return JSON.stringify(logEntry);
   }
 

@@ -1,4 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Evaluation & Testing Strategies Example
@@ -157,8 +158,8 @@ async function evaluationExample() {
   console.log('2️⃣ Consistency Testing:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const testQuery = 'What is machine learning?';
 
     console.log('Testing response consistency:\n');
@@ -192,8 +193,8 @@ async function evaluationExample() {
   console.log('3️⃣ A/B Testing Prompts:');
   console.log('-'.repeat(60));
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
 
     const promptA = 'You are a helpful assistant.';
     const promptB = 'You are an expert AI assistant. Provide detailed, accurate explanations.';
@@ -266,8 +267,8 @@ async function evaluationExample() {
     }
   }
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const testSuite = new AITestSuite(openaiClient);
 
     // Add test cases
@@ -351,8 +352,8 @@ async function evaluationExample() {
     }
   }
 
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const monitor = new PerformanceMonitor();
 
     const queries = ['What is AI?', 'Explain machine learning', 'What is deep learning?'];

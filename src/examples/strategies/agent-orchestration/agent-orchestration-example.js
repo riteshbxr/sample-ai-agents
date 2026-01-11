@@ -1,4 +1,5 @@
 import { createAIClient } from '../../../clients/client-factory.js';
+import { config } from '../../../config.js';
 
 /**
  * Agent Orchestration Example
@@ -374,8 +375,7 @@ async function agentOrchestrationExample() {
   console.log('=== Agent Orchestration Example ===');
   console.log('Intelligent tool routing pattern from galactiq\n');
 
-  const provider =
-    process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
+  const provider = config.openai.apiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const orchestrator = new AgentOrchestrator(provider);

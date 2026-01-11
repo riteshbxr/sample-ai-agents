@@ -1,6 +1,6 @@
 import { Langfuse } from 'langfuse';
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Langfuse Example
@@ -21,9 +21,9 @@ let langfuse = null;
 
 function initializeLangfuse() {
   try {
-    const secretKey = process.env.LANGFUSE_SECRET_KEY;
-    const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
-    const host = process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com';
+    const secretKey = config.langfuse.secretKey;
+    const publicKey = config.langfuse.publicKey;
+    const host = config.langfuse.host;
 
     if (!secretKey || !publicKey) {
       throw new Error(
@@ -95,9 +95,8 @@ async function basicTracingExample() {
   });
 
   try {
-    const provider =
-      process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
-    const client = provider === 'openai' ? new OpenAIClient() : new ClaudeClient();
+    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const client = createAIClient(provider);
 
     console.log(`\n📥 User Query: "What is RAG?"`);
 
@@ -194,9 +193,8 @@ async function multiStepTracingExample() {
   });
 
   try {
-    const provider =
-      process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
-    const client = provider === 'openai' ? new OpenAIClient() : new ClaudeClient();
+    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const client = createAIClient(provider);
 
     // Step 1: Research
     console.log('\n📚 Step 1: Research');
@@ -283,9 +281,8 @@ async function scoringExample() {
   });
 
   try {
-    const provider =
-      process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
-    const client = provider === 'openai' ? new OpenAIClient() : new ClaudeClient();
+    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const client = createAIClient(provider);
 
     const prompt = 'Explain quantum computing in simple terms.';
     console.log(`\n📥 Query: "${prompt}"`);
@@ -444,9 +441,8 @@ async function batchTracingExample() {
   });
 
   try {
-    const provider =
-      process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
-    const client = provider === 'openai' ? new OpenAIClient() : new ClaudeClient();
+    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const client = createAIClient(provider);
 
     const queries = [
       'What is machine learning?',

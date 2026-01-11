@@ -1,4 +1,5 @@
-import { ClaudeClient } from '../../clients/claude-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Claude Assistants-like Example
@@ -8,7 +9,7 @@ import { ClaudeClient } from '../../clients/claude-client.js';
  */
 class ClaudeAssistant {
   constructor(instructions, tools = []) {
-    this.client = new ClaudeClient();
+    this.client = createAIClient('claude');
     this.instructions = instructions;
     this.tools = tools;
     this.conversations = new Map(); // Store conversation threads
@@ -190,7 +191,7 @@ async function claudeAssistantsExample() {
   console.log('💡 Note: Claude uses Messages API with tool use, not a separate Assistants API');
   console.log('   This example demonstrates similar persistent conversation patterns\n');
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!config.claude.apiKey) {
     console.log('⚠️  Claude API key required for this example');
     console.log('   Please set ANTHROPIC_API_KEY in your .env file');
     return;

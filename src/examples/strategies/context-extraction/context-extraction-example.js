@@ -1,4 +1,5 @@
 import { createAIClient } from '../../../clients/client-factory.js';
+import { config } from '../../../config.js';
 
 /**
  * Context Extraction from Chat History Example
@@ -248,8 +249,7 @@ async function contextExtractionExample() {
   console.log('=== Context Extraction from Chat History Example ===');
   console.log('Context extraction pattern from galactiq\n');
 
-  const provider =
-    process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY ? 'openai' : 'claude';
+  const provider = config.openai.apiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const extractor = new ContextExtractor(provider);

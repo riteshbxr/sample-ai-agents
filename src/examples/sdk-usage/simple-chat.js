@@ -1,4 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Simple chat example - Basic usage of OpenAI and Claude
@@ -7,7 +8,7 @@ async function simpleChatExample() {
   console.log('=== Simple Chat Example ===\n');
 
   // Example with OpenAI/Azure OpenAI
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     console.log('Using OpenAI...');
     const openaiClient = createAIClient('openai');
 
@@ -29,7 +30,7 @@ async function simpleChatExample() {
   }
 
   // Example with Claude
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (config.claude.apiKey) {
     console.log('Using Claude...');
     const claudeClient = createAIClient('claude');
 

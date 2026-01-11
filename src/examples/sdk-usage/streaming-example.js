@@ -1,4 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 
 /**
  * Streaming example - Real-time token streaming for better UX
@@ -7,7 +8,7 @@ async function streamingExample() {
   console.log('=== Streaming Example ===\n');
 
   // OpenAI/Azure OpenAI Streaming
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     console.log('OpenAI Streaming Response:');
     console.log('---');
 
@@ -27,7 +28,7 @@ async function streamingExample() {
   }
 
   // Claude Streaming
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (config.claude.apiKey) {
     console.log('Claude Streaming Response:');
     console.log('---');
 

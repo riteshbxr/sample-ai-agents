@@ -1,5 +1,5 @@
-import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
+import { createAIClient } from '../../clients/client-factory.js';
+import { config } from '../../config.js';
 import { estimateTokens } from '../../utils/token-utils.js';
 
 /**
@@ -160,10 +160,10 @@ async function costTrackingExample() {
   const tracker = new CostTracker();
 
   // Track OpenAI requests
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
+  if (config.openai.apiKey) {
     console.log('💰 Tracking OpenAI requests...');
 
-    const openaiClient = new OpenAIClient();
+    const openaiClient = createAIClient('azure-openai');
     const messages = [{ role: 'user', content: 'Explain AI agents in 100 words.' }];
 
     const response = await openaiClient.chat(messages);
@@ -179,10 +179,10 @@ async function costTrackingExample() {
   }
 
   // Track Claude requests
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (config.claude.apiKey) {
     console.log('\n💰 Tracking Claude requests...');
 
-    const claudeClient = new ClaudeClient();
+    const claudeClient = createAIClient('claude');
     const messages = [{ role: 'user', content: 'Explain RAG in 100 words.' }];
 
     const response = await claudeClient.chat(messages);
@@ -199,8 +199,8 @@ async function costTrackingExample() {
 
   // Simulate multiple requests
   console.log('\n💰 Simulating multiple requests...');
-  if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
+  if (config.openai.apiKey) {
+    const openaiClient = createAIClient('azure-openai');
     const queries = [
       'What is machine learning?',
       'Explain neural networks.',
