@@ -64,7 +64,7 @@ export class MultiAgentSystem {
         },
         required: ['text'],
       },
-      async ({ text }) => {
+      async () => {
         console.log(`  ✏️ [Review Agent] Checking grammar...`);
         // Mock grammar check
         return {

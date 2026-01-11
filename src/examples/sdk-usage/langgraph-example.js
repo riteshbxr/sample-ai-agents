@@ -122,7 +122,7 @@ async function llmNode(state) {
     const deployment = config.openai.azure.deployment || config.openai.model;
 
     // Extract resource name from endpoint (e.g., https://resource.openai.azure.com -> resource)
-    const endpointMatch = endpoint.match(/https?:\/\/([^\.]+)\./);
+    const endpointMatch = endpoint.match(/https?:\/\/([^.]+)\./);
     const instanceName = endpointMatch ? endpointMatch[1] : null;
 
     if (instanceName) {
@@ -173,7 +173,6 @@ async function llmNode(state) {
 function decisionNode(state) {
   console.log('  🤔 [Decision Node] Making routing decision...');
 
-  const step = state.step;
   const researchComplete = state.researchComplete;
   const analysisComplete = state.analysisComplete;
 

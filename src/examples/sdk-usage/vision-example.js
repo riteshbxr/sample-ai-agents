@@ -1,7 +1,6 @@
 import { OpenAIClient } from '../../clients/openai-client.js';
 import { ClaudeClient } from '../../clients/claude-client.js';
 import fs from 'fs';
-import path from 'path';
 
 /**
  * Vision/Image Analysis Example
@@ -144,13 +143,8 @@ async function visionExample() {
   console.log('-'.repeat(60));
 
   if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
-
     // Example: Extract text from an image
-    const ocrPrompt = `Extract all text from this image. 
-    If it's a document, preserve the structure and formatting.
-    If it's a screenshot, describe what you see and extract any visible text.`;
-
+    // OCR prompt would be used here with an actual image file
     console.log('OCR Prompt prepared. (Requires actual image file)');
     console.log('To use: Provide an image path with text content');
   }
@@ -213,13 +207,7 @@ async function visionExample() {
   console.log('-'.repeat(60));
 
   if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
-
-    const comparisonPrompt = `Compare these two images and describe:
-    1. Similarities
-    2. Differences
-    3. Which one you prefer and why`;
-
+    // Image comparison prompt would be used here with actual images
     console.log('Image comparison prompt prepared.');
     console.log('To use: Provide two image URLs or base64 encoded images');
   }
@@ -231,11 +219,7 @@ async function visionExample() {
   console.log('-'.repeat(60));
 
   if (process.env.ANTHROPIC_API_KEY) {
-    const claudeClient = new ClaudeClient();
-
-    const codeExtractionPrompt = `If this image contains code, extract it and format it properly.
-    Identify the programming language and provide the code in a code block.`;
-
+    // Code extraction prompt would be used here with an actual image
     console.log('Code extraction prompt prepared.');
     console.log('To use: Provide a screenshot of code');
   }

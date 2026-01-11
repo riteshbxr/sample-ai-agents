@@ -1,7 +1,6 @@
 import { OpenAIClient } from '../../clients/openai-client.js';
-import { estimateTokens } from '../../utils/token-utils.js';
-import { calculateCost, calculateCostFromResponse } from '../../utils/cost-utils.js';
 import { ClaudeClient } from '../../clients/claude-client.js';
+import { estimateTokens } from '../../utils/token-utils.js';
 
 /**
  * Cost Tracking Example

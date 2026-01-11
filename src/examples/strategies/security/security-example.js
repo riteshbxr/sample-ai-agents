@@ -1,5 +1,4 @@
 import { OpenAIClient } from '../../clients/openai-client.js';
-import { ClaudeClient } from '../../clients/claude-client.js';
 
 /**
  * Security & Prompt Injection Prevention Example
@@ -46,6 +45,7 @@ class SecurityManager {
     }
 
     // Remove control characters
+    // eslint-disable-next-line no-control-regex
     sanitized = sanitized.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
 
     // Limit length

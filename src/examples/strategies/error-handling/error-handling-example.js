@@ -174,7 +174,7 @@ async function errorHandlingExample() {
   }
 
   try {
-    const result = await makeRequest();
+    await makeRequest();
     console.log('✅ Request successful');
   } catch (error) {
     console.error('❌ Request failed:', error.message);

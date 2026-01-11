@@ -1,8 +1,9 @@
 import {
   estimateTokens as estimateTokensUtil,
   countMessages as countMessagesUtil,
-  optimizeContext,
 } from '../../utils/token-utils.js';
+import { OpenAIClient } from '../../clients/openai-client.js';
+import { ClaudeClient } from '../../clients/claude-client.js';
 
 /**
  * Memory Management Example
@@ -320,7 +321,6 @@ async function memoryExample() {
   const persistentConv = new PersistentConversation();
 
   if (process.env.AZURE_OPENAI_API_KEY || process.env.OPENAI_API_KEY) {
-    const openaiClient = new OpenAIClient();
     const messages = [
       { role: 'system', content: 'You are helpful.' },
       { role: 'user', content: 'Hello!' },

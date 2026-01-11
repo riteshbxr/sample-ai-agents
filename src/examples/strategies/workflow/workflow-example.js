@@ -109,7 +109,7 @@ class WorkflowAgent {
         },
         required: ['result', 'requirements'],
       },
-      async ({ result, requirements }) => {
+      async () => {
         console.log(`  ✅ Validating result against requirements...`);
         return {
           valid: true,
