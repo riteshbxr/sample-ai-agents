@@ -305,7 +305,7 @@ async function statePersistenceExample() {
   console.log('=== State Persistence / Checkpointing Example ===');
   console.log('State management pattern from galactiq\n');
 
-  const provider = config.openai.apiKey ? 'openai' : 'claude';
+  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const checkpointStore = new CheckpointStore();

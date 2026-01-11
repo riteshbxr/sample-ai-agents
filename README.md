@@ -65,6 +65,15 @@ AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
+**Option 3: Default Provider Configuration**
+When using `createAIClient('openai')`, control which provider is used:
+```env
+OPENAI_DEFAULT_PROVIDER=azure-openai  # Use Azure OpenAI (default)
+# or
+OPENAI_DEFAULT_PROVIDER=openai-standard  # Use Standard OpenAI
+```
+This allows switching between Azure and Standard OpenAI without code changes.
+
 **Claude (Optional)**
 ```env
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
@@ -327,9 +336,13 @@ ai-agents/
 ### Basic Chat with OpenAI
 
 ```javascript
-import { OpenAIClient } from './src/clients/openai-client.js';
+import { createAIClient } from './src/clients/client-factory.js';
 
-const client = new OpenAIClient();
+// Use factory function (recommended)
+const client = createAIClient('openai');  // Uses defaultProvider setting
+// or explicitly:
+const azureClient = createAIClient('azure-openai');
+const standardClient = createAIClient('openai-standard');
 const response = await client.chat([
   { role: 'user', content: 'Hello, how are you?' }
 ]);

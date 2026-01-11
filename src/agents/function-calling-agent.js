@@ -17,8 +17,9 @@ export class FunctionCallingAgent {
   /**
    * Create a function calling agent
    * @param {'openai'|'claude'} [provider='openai'] - AI provider to use
+   * @param {import('../clients/ai-client-interface.js').AIClientInterface} [client] - Optional client instance (for testing)
    */
-  constructor(provider = 'openai') {
+  constructor(provider = 'openai', client = null) {
     this.provider = provider;
     /** @type {Map<string, Function>} */
     this.functions = new Map(); // Store function implementations
@@ -26,7 +27,7 @@ export class FunctionCallingAgent {
     this.functionDefinitions = []; // Store function schemas
     /** @type {import('../clients/ai-client-interface.js').ChatMessage[]} */
     this.conversationHistory = [];
-    this.client = createAIClient(provider);
+    this.client = client || createAIClient(provider);
     this.logger = createLogger('FunctionCallingAgent');
   }
 
@@ -81,95 +82,105 @@ export class FunctionCallingAgent {
    * Chat with function calling capability
    * @param {string} userMessage - User's message
    * @param {Object} options - Additional options
+   * @param {number} [options.maxToolCallIterations=50] - Maximum number of tool call iterations to prevent infinite loops
    * @returns {Promise<string>} Agent's response
    */
   async chat(userMessage, options = {}) {
     const client = this.client;
+    const maxIterations = options.maxToolCallIterations || 50;
 
     this.conversationHistory.push({
       role: 'user',
       content: userMessage,
     });
 
-    // Use unified interface method
-    let response = await client.chatWithTools(
-      this.conversationHistory,
-      this.functionDefinitions,
-      options
-    );
+    // Loop until we get a final response without tool calls
+    let iterationCount = 0;
+    while (iterationCount < maxIterations) {
+      iterationCount++;
 
-    // Handle tool use using interface methods
-    if (client.hasToolUse(response)) {
-      const toolUseBlocks = client.getToolUseBlocks(response);
+      // Use unified interface method
+      let response = await client.chatWithTools(
+        this.conversationHistory,
+        this.functionDefinitions,
+        options
+      );
 
-      // Execute all tool calls
-      const toolResults = [];
+      // Handle tool use using interface methods
+      if (client.hasToolUse(response)) {
+        const toolUseBlocks = client.getToolUseBlocks(response);
 
-      for (const block of toolUseBlocks) {
-        let functionName, functionArgs;
+        // Execute all tool calls
+        const toolResults = [];
 
-        // Handle OpenAI format (tool_calls)
-        if (block.function) {
-          functionName = block.function.name;
-          functionArgs = JSON.parse(block.function.arguments);
+        for (const block of toolUseBlocks) {
+          let functionName, functionArgs;
+
+          // Handle OpenAI format (tool_calls)
+          if (block.function) {
+            functionName = block.function.name;
+            functionArgs = JSON.parse(block.function.arguments);
+          }
+          // Handle Claude format (tool_use)
+          else {
+            functionName = block.name;
+            functionArgs = block.input;
+          }
+
+          console.log(`Calling function: ${functionName}`, functionArgs);
+          const result = await this.executeFunction(functionName, functionArgs);
+
+          // Format tool result based on provider
+          if (this.provider === 'openai') {
+            toolResults.push({
+              role: 'tool',
+              tool_call_id: block.id,
+              content: JSON.stringify(result),
+            });
+          } else {
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: block.id,
+              content: JSON.stringify(result),
+            });
+          }
         }
-        // Handle Claude format (tool_use)
-        else {
-          functionName = block.name;
-          functionArgs = block.input;
-        }
 
-        console.log(`Calling function: ${functionName}`, functionArgs);
-        const result = await this.executeFunction(functionName, functionArgs);
-
-        // Format tool result based on provider
+        // Add assistant message and tool results to conversation
         if (this.provider === 'openai') {
-          toolResults.push({
-            role: 'tool',
-            tool_call_id: block.id,
-            content: JSON.stringify(result),
-          });
+          // OpenAI format: add message with tool_calls, then tool results
+          const message = response.choices?.[0]?.message || {
+            role: 'assistant',
+            content: client.getTextContent(response),
+          };
+          this.conversationHistory.push(message);
+          this.conversationHistory.push(...toolResults);
         } else {
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: block.id,
-            content: JSON.stringify(result),
+          // Claude format: add assistant content, then user with tool results
+          this.conversationHistory.push({
+            role: 'assistant',
+            content: response.content,
+          });
+          this.conversationHistory.push({
+            role: 'user',
+            content: toolResults,
           });
         }
+
+        // Continue loop to check for more tool calls
+        continue;
       }
 
-      // Add assistant message and tool results to conversation
-      if (this.provider === 'openai') {
-        // OpenAI format: add message with tool_calls, then tool results
-        const message = response.choices?.[0]?.message || {
-          role: 'assistant',
-          content: client.getTextContent(response),
-        };
-        this.conversationHistory.push(message);
-        this.conversationHistory.push(...toolResults);
-      } else {
-        // Claude format: add assistant content, then user with tool results
-        this.conversationHistory.push({
-          role: 'assistant',
-          content: response.content,
-        });
-        this.conversationHistory.push({
-          role: 'user',
-          content: toolResults,
-        });
-      }
-
-      // Get final response
-      response = await client.chat(this.conversationHistory, options);
+      // No tool use - return text content
       const textContent = client.getTextContent(response);
 
-      // Add final response to conversation
+      // Add response to conversation
       if (this.provider === 'openai') {
-        const finalMessage = response.choices?.[0]?.message || {
+        const message = response.choices?.[0]?.message || {
           role: 'assistant',
           content: textContent,
         };
-        this.conversationHistory.push(finalMessage);
+        this.conversationHistory.push(message);
       } else {
         this.conversationHistory.push({
           role: 'assistant',
@@ -180,21 +191,10 @@ export class FunctionCallingAgent {
       return textContent;
     }
 
-    // No tool use - return text content
-    const textContent = client.getTextContent(response);
-
-    // Add response to conversation
-    if (this.provider === 'openai') {
-      const message = response.choices?.[0]?.message || { role: 'assistant', content: textContent };
-      this.conversationHistory.push(message);
-    } else {
-      this.conversationHistory.push({
-        role: 'assistant',
-        content: response.content,
-      });
-    }
-
-    return textContent;
+    // If we've exceeded max iterations, throw an error
+    throw new Error(
+      `Maximum tool call iterations (${maxIterations}) exceeded. This may indicate an infinite loop in function calling.`
+    );
   }
 
   /**

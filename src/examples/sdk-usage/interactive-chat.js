@@ -143,7 +143,7 @@ class InteractiveChat {
           const openaiClient = createAIClient('openai');
           const responses = {};
 
-          if (config.openai.apiKey) {
+          if (config.openai.azureApiKey || config.openai.standardApiKey) {
             const openaiResp = await openaiClient.chat([{ role: 'user', content: query }]);
             responses.openai = openaiResp.choices[0].message.content.substring(0, 200);
           }
@@ -551,7 +551,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
 
     // Check API key availability
     if (this.provider === 'openai') {
-      if (!config.openai.apiKey) {
+      if (!config.openai.azureApiKey && !config.openai.standardApiKey) {
         console.log(
           '\n⚠️  OpenAI API key not found. Please set AZURE_OPENAI_API_KEY or OPENAI_API_KEY in your .env file.'
         );
@@ -626,7 +626,7 @@ async function interactiveChatExample() {
   // Determine which provider to use based on available API keys
   let provider = 'openai';
 
-  if (config.claude.apiKey && !config.openai.apiKey) {
+  if (config.claude.apiKey && !config.openai.azureApiKey && !config.openai.standardApiKey) {
     provider = 'claude';
   }
 

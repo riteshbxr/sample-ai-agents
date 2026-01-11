@@ -12,7 +12,7 @@ async function promptTechniquesExample() {
   console.log('1️⃣ Few-Shot Learning:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const fewShotPrompt = `
@@ -75,7 +75,7 @@ Let's think step by step:
   console.log('3️⃣ Role-Playing:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const rolePrompt = `You are a senior product manager at a tech startup with 10 years of experience.
@@ -98,7 +98,7 @@ Provide your expert advice:`;
   console.log('4️⃣ Output Formatting:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const formatPrompt = `Create a product roadmap for an AI agent platform. 
@@ -147,7 +147,7 @@ Generate 3 options, numbered.`;
   console.log('6️⃣ Self-Consistency (Multiple Attempts):');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const question = 'What are the top 3 AI trends for startups in 2024?';
@@ -174,7 +174,7 @@ Generate 3 options, numbered.`;
   console.log('7️⃣ Prompt Chaining:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     // Step 1: Generate ideas
@@ -234,7 +234,7 @@ DO:
   console.log('9️⃣ Temperature Tuning:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const prompt = 'Write a creative tagline for an AI startup';
 
@@ -257,7 +257,7 @@ DO:
   console.log('🔟 Meta-Prompting:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const metaPrompt = `You are an expert at writing prompts for AI systems.

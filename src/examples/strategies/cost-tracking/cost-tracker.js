@@ -1,5 +1,6 @@
 import { estimateTokens } from '../../../utils/token-utils.js';
 import { PRICING } from './pricing.js';
+import { config } from '../../../config.js';
 
 /**
  * Cost Tracker
@@ -25,7 +26,11 @@ export class CostTracker {
     const usage = response.usage;
     if (!usage) return 0;
 
-    const pricing = PRICING.openai[model] || PRICING.openai['gpt-4-turbo-preview'];
+    const defaultModel = config.openai.model;
+    const pricing =
+      PRICING.openai[model] ||
+      PRICING.openai[defaultModel] ||
+      PRICING.openai['gpt-4-turbo-preview'];
     const inputCost = (usage.prompt_tokens / 1_000_000) * pricing.input;
     const outputCost = (usage.completion_tokens / 1_000_000) * pricing.output;
     const totalCost = inputCost + outputCost;
@@ -47,7 +52,11 @@ export class CostTracker {
     const usage = response.usage;
     if (!usage) return 0;
 
-    const pricing = PRICING.claude[model] || PRICING.claude['claude-sonnet-4-5-20250929'];
+    const defaultModel = config.claude.model;
+    const pricing =
+      PRICING.claude[model] ||
+      PRICING.claude[defaultModel] ||
+      PRICING.claude['claude-sonnet-4-5-20250929'];
     const inputCost = (usage.input_tokens / 1_000_000) * pricing.input;
     const outputCost = (usage.output_tokens / 1_000_000) * pricing.output;
     const totalCost = inputCost + outputCost;
@@ -66,16 +75,47 @@ export class CostTracker {
    * Track a request
    */
   trackRequest(provider, model, costData, metadata = {}) {
+    // Calculate cost if not provided
+    let totalCost = costData.totalCost;
+    if (totalCost === undefined || totalCost === null) {
+      // Calculate cost from token counts
+      const promptTokens = costData.promptTokens || costData.inputTokens || 0;
+      const completionTokens = costData.completionTokens || costData.outputTokens || 0;
+
+      if (provider === 'openai') {
+        const defaultModel = config.openai.model;
+        const pricing =
+          PRICING.openai[model] ||
+          PRICING.openai[defaultModel] ||
+          PRICING.openai['gpt-4-turbo-preview'];
+        const inputCost = (promptTokens / 1_000_000) * pricing.input;
+        const outputCost = (completionTokens / 1_000_000) * pricing.output;
+        totalCost = inputCost + outputCost;
+      } else if (provider === 'claude') {
+        const defaultModel = config.claude.model;
+        const pricing =
+          PRICING.claude[model] ||
+          PRICING.claude[defaultModel] ||
+          PRICING.claude['claude-sonnet-4-5-20250929'];
+        const inputCost = (promptTokens / 1_000_000) * pricing.input;
+        const outputCost = (completionTokens / 1_000_000) * pricing.output;
+        totalCost = inputCost + outputCost;
+      } else {
+        totalCost = 0;
+      }
+    }
+
     const request = {
       timestamp: new Date().toISOString(),
       provider,
       model,
       ...costData,
+      totalCost,
       ...metadata,
     };
 
     this.requests.push(request);
-    this.totalCost += costData.totalCost;
+    this.totalCost += totalCost;
 
     return request;
   }

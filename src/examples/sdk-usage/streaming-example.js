@@ -8,7 +8,7 @@ async function streamingExample() {
   console.log('=== Streaming Example ===\n');
 
   // OpenAI/Azure OpenAI Streaming
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     console.log('OpenAI Streaming Response:');
     console.log('---');
 

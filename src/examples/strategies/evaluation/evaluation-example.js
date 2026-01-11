@@ -158,7 +158,7 @@ async function evaluationExample() {
   console.log('2️⃣ Consistency Testing:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const testQuery = 'What is machine learning?';
 
@@ -193,7 +193,7 @@ async function evaluationExample() {
   console.log('3️⃣ A/B Testing Prompts:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
 
     const promptA = 'You are a helpful assistant.';
@@ -267,7 +267,7 @@ async function evaluationExample() {
     }
   }
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const testSuite = new AITestSuite(openaiClient);
 
@@ -352,7 +352,7 @@ async function evaluationExample() {
     }
   }
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const monitor = new PerformanceMonitor();
 

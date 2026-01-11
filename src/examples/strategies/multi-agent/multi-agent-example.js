@@ -7,7 +7,8 @@ import { config } from '../../config.js';
  */
 class MultiAgentSystem {
   constructor() {
-    const provider = config.openai.apiKey ? 'openai' : 'claude';
+    const provider =
+      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
 
     // Research Agent - Gathers information
     this.researchAgent = new FunctionCallingAgent(provider);

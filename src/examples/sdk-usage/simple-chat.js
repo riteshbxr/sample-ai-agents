@@ -8,7 +8,7 @@ async function simpleChatExample() {
   console.log('=== Simple Chat Example ===\n');
 
   // Example with OpenAI/Azure OpenAI
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     console.log('Using OpenAI...');
     const openaiClient = createAIClient('openai');
 

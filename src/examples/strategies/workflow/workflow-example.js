@@ -212,7 +212,7 @@ class WorkflowAgent {
 async function workflowExample() {
   console.log('=== Agentic Workflow Example ===\n');
 
-  const provider = config.openai.apiKey ? 'openai' : 'claude';
+  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
   const workflowAgent = new WorkflowAgent(provider);
 
   // Example 1: Linear workflow

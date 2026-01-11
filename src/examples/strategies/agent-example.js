@@ -57,7 +57,7 @@ async function agentExample() {
   console.log('=== Function Calling Agent Example ===\n');
 
   // Choose provider: 'openai' or 'claude'
-  const provider = config.openai.apiKey ? 'openai' : 'claude';
+  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const agent = new FunctionCallingAgent(provider);

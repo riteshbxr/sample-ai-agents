@@ -128,7 +128,7 @@ async function memoryExample() {
   console.log('1️⃣ Conversation with Automatic Summarization:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const manager = new ConversationManager(openaiClient, 4000, 0.7);
 
@@ -255,7 +255,7 @@ async function memoryExample() {
     }
   }
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('azure-openai');
     const memory = new LongTermMemory();
 
@@ -320,7 +320,7 @@ async function memoryExample() {
 
   const persistentConv = new PersistentConversation();
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const messages = [
       { role: 'system', content: 'You are helpful.' },
       { role: 'user', content: 'Hello!' },

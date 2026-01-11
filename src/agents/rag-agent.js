@@ -7,8 +7,13 @@ import { createAIClient } from '../clients/client-factory.js';
  * Uses a simple in-memory vector store (no server required)
  */
 export class RAGAgent {
-  constructor(collectionName = 'knowledge_base') {
-    this.openaiClient = createAIClient('openai');
+  /**
+   * Create a RAG agent
+   * @param {string} [collectionName='knowledge_base'] - Collection name for vector store
+   * @param {import('../clients/ai-client-interface.js').AIClientInterface} [client] - Optional client instance (for testing)
+   */
+  constructor(collectionName = 'knowledge_base', client = null) {
+    this.openaiClient = client || createAIClient('openai');
 
     // Use simple in-memory vector store (no server required)
     // For production with persistence, consider using a vector database service

@@ -20,7 +20,7 @@ async function structuredOutputExample() {
   console.log('\n');
 
   // OpenAI with JSON mode
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     console.log('🤖 OpenAI - Structured JSON Output:');
     console.log('-'.repeat(60));
 
@@ -104,7 +104,7 @@ async function structuredOutputExample() {
   console.log('📊 Generating Structured Product Data:');
   console.log('-'.repeat(60));
 
-  if (config.openai.apiKey) {
+  if (config.openai.azureApiKey || config.openai.standardApiKey) {
     const openaiClient = createAIClient('openai');
     const productPrompt = `Generate a product catalog with 3 products. Each product should have:
     - name (string)

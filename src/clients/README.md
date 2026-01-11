@@ -23,11 +23,32 @@ All clients implement `AIClientInterface` which provides these common methods:
 ```javascript
 import { createAIClient } from './clients/client-factory.js';
 
-// Create a client (automatically detects available provider)
-const client = createAIClient('openai');  // Standard OpenAI (non-Azure)
-const azureClient = createAIClient('azure-openai');  // Azure OpenAI (default)
+// Create a client
+// 'openai' uses config.openai.defaultProvider to determine Azure vs Standard
+const client = createAIClient('openai');  // Uses defaultProvider setting
+const standardClient = createAIClient('openai-standard');  // Always Standard OpenAI
+const azureClient = createAIClient('azure-openai');  // Always Azure OpenAI
 const claudeClient = createAIClient('claude');  // Claude
 ```
+
+### Default Provider Configuration
+
+When you use `createAIClient('openai')`, the factory uses `config.openai.defaultProvider` to determine which client to create:
+
+- **`'azure-openai'`** (default): Creates `AzureOpenAIClient`
+- **`'openai-standard'`**: Creates `StandardOpenAIClient`
+
+You can configure this via the `OPENAI_DEFAULT_PROVIDER` environment variable:
+
+```bash
+# Use Azure OpenAI when 'openai' is specified
+OPENAI_DEFAULT_PROVIDER=azure-openai
+
+# Use Standard OpenAI when 'openai' is specified
+OPENAI_DEFAULT_PROVIDER=openai-standard
+```
+
+This allows you to switch between Azure and Standard OpenAI without changing your code - just update the environment variable.
 
 ### Direct Instantiation (Not Recommended)
 
@@ -103,7 +124,7 @@ Both formats are accepted by `chatWithTools()`.
 - **`getEmbeddings(input, embeddingModel)`** - Get embeddings
 - Requires: `OPENAI_API_KEY` environment variable
 
-### Azure OpenAI Features (OpenAIClient)
+### Azure OpenAI Features (AzureOpenAIClient)
 
 - **`getEmbeddings(input, embeddingModel)`** - Get embeddings
 - Supports Azure-specific deployments and configurations
@@ -238,11 +259,22 @@ console.log(history); // [{ method: 'chat', messages: [...], ... }]
 - You have `OPENAI_API_KEY` (not Azure credentials)
 - You need the latest OpenAI features
 
-### Use OpenAIClient (Azure) when:
+### Use AzureOpenAIClient when:
 - You're using Azure OpenAI service
 - You have `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_API_KEY`
 - You need Azure-specific deployments
 - You want enterprise-grade Azure integration
+
+### Provider Selection with 'openai':
+
+When you use `createAIClient('openai')`, the factory checks `config.openai.defaultProvider`:
+- Set `OPENAI_DEFAULT_PROVIDER=azure-openai` to use Azure OpenAI
+- Set `OPENAI_DEFAULT_PROVIDER=openai-standard` to use Standard OpenAI
+- Default is `'azure-openai'` if not specified
+
+For explicit control, use:
+- `createAIClient('openai-standard')` - Always Standard OpenAI
+- `createAIClient('azure-openai')` - Always Azure OpenAI
 
 ### Use MockAIClient when:
 - Writing unit tests

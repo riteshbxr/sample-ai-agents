@@ -34,7 +34,9 @@ async function assistantsAPIExample() {
     console.log('   Assistants API requires OPENAI_API_KEY (not Azure OpenAI).\n');
   }
 
-  const openaiClient = createAIClient('openai');
+  // Force use of standard OpenAI (not Azure) for Assistants API
+  // 'openai-standard' always uses StandardOpenAIClient which requires standardApiKey
+  const openaiClient = createAIClient('openai-standard');
 
   try {
     // Step 1: Create an Assistant

@@ -249,7 +249,7 @@ async function contextExtractionExample() {
   console.log('=== Context Extraction from Chat History Example ===');
   console.log('Context extraction pattern from galactiq\n');
 
-  const provider = config.openai.apiKey ? 'openai' : 'claude';
+  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const extractor = new ContextExtractor(provider);
