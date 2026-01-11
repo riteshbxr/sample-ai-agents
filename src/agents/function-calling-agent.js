@@ -17,8 +17,9 @@ export class FunctionCallingAgent {
   /**
    * Create a function calling agent
    * @param {'openai'|'claude'} [provider='openai'] - AI provider to use
+   * @param {import('../clients/ai-client-interface.js').AIClientInterface} [client] - Optional client instance (for testing)
    */
-  constructor(provider = 'openai') {
+  constructor(provider = 'openai', client = null) {
     this.provider = provider;
     /** @type {Map<string, Function>} */
     this.functions = new Map(); // Store function implementations
@@ -26,7 +27,7 @@ export class FunctionCallingAgent {
     this.functionDefinitions = []; // Store function schemas
     /** @type {import('../clients/ai-client-interface.js').ChatMessage[]} */
     this.conversationHistory = [];
-    this.client = createAIClient(provider);
+    this.client = client || createAIClient(provider);
     this.logger = createLogger('FunctionCallingAgent');
   }
 

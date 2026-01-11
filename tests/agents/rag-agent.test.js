@@ -4,11 +4,9 @@ import { RAGAgent } from '../../src/agents/rag-agent.js';
 import { createMockClient, createStreamingMockClient } from '../helpers/test-helpers.js';
 
 test('RAGAgent - add documents with mock client', async () => {
-  const agent = new RAGAgent('test_collection');
-
-  // Replace client with mock
+  // Create mock client and pass to constructor to avoid requiring API keys
   const mockClient = createMockClient();
-  agent.openaiClient = mockClient;
+  const agent = new RAGAgent('test_collection', mockClient);
 
   const documents = ['Document 1', 'Document 2', 'Document 3'];
   await agent.addDocuments(documents);
@@ -21,11 +19,10 @@ test('RAGAgent - add documents with mock client', async () => {
 });
 
 test('RAGAgent - query with mock client', async () => {
-  const agent = new RAGAgent('test_collection');
   const mockClient = createMockClient({
     defaultResponse: 'This is the answer based on the context',
   });
-  agent.openaiClient = mockClient;
+  const agent = new RAGAgent('test_collection', mockClient);
 
   // Add documents first
   await agent.addDocuments(['Test document content']);
@@ -43,9 +40,8 @@ test('RAGAgent - query with mock client', async () => {
 });
 
 test('RAGAgent - streaming query', async () => {
-  const agent = new RAGAgent('test_collection');
   const mockClient = createStreamingMockClient('Streaming answer');
-  agent.openaiClient = mockClient;
+  const agent = new RAGAgent('test_collection', mockClient);
 
   await agent.addDocuments(['Test content']);
 

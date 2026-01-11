@@ -4,13 +4,11 @@ import { FunctionCallingAgent } from '../../src/agents/function-calling-agent.js
 import { createMockClient, createToolCallingMockClient } from '../helpers/test-helpers.js';
 
 test('FunctionCallingAgent - basic chat with mock client', async () => {
-  const agent = new FunctionCallingAgent('openai');
-
-  // Replace the client with a mock for testing
+  // Create mock client and pass to constructor to avoid requiring API keys
   const mockClient = createMockClient({
     defaultResponse: 'This is a test response from the agent',
   });
-  agent.client = mockClient;
+  const agent = new FunctionCallingAgent('openai', mockClient);
 
   const response = await agent.chat('What is the weather?');
 
@@ -19,11 +17,9 @@ test('FunctionCallingAgent - basic chat with mock client', async () => {
 });
 
 test('FunctionCallingAgent - function calling with mock', async () => {
-  const agent = new FunctionCallingAgent('openai');
-
-  // Replace with mock client that returns tool calls
+  // Create mock client and pass to constructor to avoid requiring API keys
   const mockClient = createToolCallingMockClient('test_function', { param: 'test-value' });
-  agent.client = mockClient;
+  const agent = new FunctionCallingAgent('openai', mockClient);
 
   // Register a test function
   let functionCalled = false;
@@ -91,11 +87,10 @@ test('FunctionCallingAgent - function calling with mock', async () => {
 });
 
 test('FunctionCallingAgent - conversation history', async () => {
-  const agent = new FunctionCallingAgent('openai');
   const mockClient = createMockClient({
     defaultResponse: 'Response',
   });
-  agent.client = mockClient;
+  const agent = new FunctionCallingAgent('openai', mockClient);
 
   await agent.chat('First message');
   await agent.chat('Second message');

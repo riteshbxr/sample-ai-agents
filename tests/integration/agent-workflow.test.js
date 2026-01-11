@@ -4,11 +4,10 @@ import { FunctionCallingAgent } from '../../src/agents/function-calling-agent.js
 import { createMockClient } from '../helpers/test-helpers.js';
 
 test('Agent workflow - multi-turn conversation with mock', async () => {
-  const agent = new FunctionCallingAgent('openai');
   const mockClient = createMockClient({
     defaultResponse: 'Mock response',
   });
-  agent.client = mockClient;
+  const agent = new FunctionCallingAgent('openai', mockClient);
 
   // First turn
   const response1 = await agent.chat('Hello');
@@ -23,9 +22,8 @@ test('Agent workflow - multi-turn conversation with mock', async () => {
 });
 
 test('Agent workflow - function calling chain', async () => {
-  const agent = new FunctionCallingAgent('openai');
   const mockClient = createMockClient();
-  agent.client = mockClient;
+  const agent = new FunctionCallingAgent('openai', mockClient);
 
   // Register functions
   let step1Called = false;
