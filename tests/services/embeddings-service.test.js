@@ -4,17 +4,14 @@ import { EmbeddingsService } from '../../src/services/embeddings-service.js';
 import { MockAIClient } from '../../src/clients/mock-client.js';
 
 test('EmbeddingsService - constructor with explicit provider', () => {
-  const service = new EmbeddingsService('openai');
-  assert.strictEqual(service.provider, 'openai');
+  const service = new EmbeddingsService('mock');
+  assert.strictEqual(service.provider, 'mock');
   assert.ok(service.client);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - getEmbeddings with single text', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
-  // Mock getEmbeddings to return a test embedding
+  const service = new EmbeddingsService('mock');
   service.client.getEmbeddings = async (texts) => {
     return texts.map(() => new Array(1536).fill(0.1));
   };
@@ -24,13 +21,11 @@ test('EmbeddingsService - getEmbeddings with single text', async () => {
   assert.ok(Array.isArray(embeddings));
   assert.strictEqual(embeddings.length, 1);
   assert.ok(Array.isArray(embeddings[0]));
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - getEmbeddings with multiple texts', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   service.client.getEmbeddings = async (texts) => {
     return texts.map(() => new Array(1536).fill(0.1));
   };
@@ -41,13 +36,11 @@ test('EmbeddingsService - getEmbeddings with multiple texts', async () => {
   embeddings.forEach((emb) => {
     assert.ok(Array.isArray(emb));
   });
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - findSimilarDocuments', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   // Create embeddings where first document is similar to query
   service.client.getEmbeddings = async (texts) => {
     const queryEmbedding = new Array(1536).fill(0.5);
@@ -62,13 +55,11 @@ test('EmbeddingsService - findSimilarDocuments', async () => {
   assert.ok(Array.isArray(results));
   assert.ok(results.length > 0);
   assert.ok(results[0].similarity > results[1]?.similarity || results.length === 1);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - findSimilarDocuments with topK limit', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   service.client.getEmbeddings = async (texts) => {
     return texts.map(() => new Array(1536).fill(0.5));
   };
@@ -77,13 +68,11 @@ test('EmbeddingsService - findSimilarDocuments with topK limit', async () => {
   const results = await service.findSimilarDocuments('Query', documents, { topK: 2 });
 
   assert.strictEqual(results.length, 2);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - findSimilarDocuments with threshold', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   service.client.getEmbeddings = async (texts) => {
     const queryEmbedding = new Array(1536).fill(0.9);
     const doc1Embedding = new Array(1536).fill(0.9); // Very high similarity (cosine ~1.0)
@@ -100,21 +89,20 @@ test('EmbeddingsService - findSimilarDocuments with threshold', async () => {
   if (results.length > 0) {
     assert.ok(results[0].similarity >= 0.8);
   }
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - findSimilarDocuments with empty documents', async () => {
-  const service = new EmbeddingsService('openai');
+  const service = new EmbeddingsService('mock');
 
   const results = await service.findSimilarDocuments('Query', []);
 
   assert.strictEqual(results.length, 0);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - clusterDocuments', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   // Create embeddings that can be clustered
   service.client.getEmbeddings = async (texts) => {
     return texts.map((_, idx) => {
@@ -133,13 +121,11 @@ test('EmbeddingsService - clusterDocuments', async () => {
 
   assert.ok(typeof clusters === 'object');
   assert.ok(Object.keys(clusters).length > 0);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - classifyText', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   // Create embeddings where text is similar to positive examples
   service.client.getEmbeddings = async (texts) => {
     if (texts.includes('Great product')) {
@@ -163,13 +149,11 @@ test('EmbeddingsService - classifyText', async () => {
 
   assert.ok(result.category);
   assert.ok(typeof result.confidence === 'number');
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - classifyText with multiple texts', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   service.client.getEmbeddings = async (texts) => {
     return texts.map(() => new Array(1536).fill(0.5));
   };
@@ -187,13 +171,11 @@ test('EmbeddingsService - classifyText with multiple texts', async () => {
     assert.ok(result.category);
     assert.ok(result.text);
   });
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - findDuplicates', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   // Create embeddings where first two are identical
   service.client.getEmbeddings = async (texts) => {
     return texts.map((_, idx) => {
@@ -211,13 +193,11 @@ test('EmbeddingsService - findDuplicates', async () => {
   assert.ok(Array.isArray(duplicates));
   assert.ok(duplicates.length > 0);
   assert.ok(duplicates[0].similarity >= 0.95);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - findDuplicates with custom threshold', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   service.client.getEmbeddings = async (texts) => {
     return texts.map(() => new Array(1536).fill(0.5));
   };
@@ -227,13 +207,11 @@ test('EmbeddingsService - findDuplicates with custom threshold', async () => {
 
   // With threshold 0.99, should find fewer duplicates
   assert.ok(Array.isArray(duplicates));
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('EmbeddingsService - findSimilarDocuments handles insufficient embeddings', async () => {
-  const mockClient = new MockAIClient();
-  const service = new EmbeddingsService('openai');
-  service.client = mockClient;
-
+  const service = new EmbeddingsService('mock');
   // Return fewer embeddings than expected
   service.client.getEmbeddings = async () => {
     return [new Array(1536).fill(0.5)]; // Only query embedding
@@ -243,4 +221,5 @@ test('EmbeddingsService - findSimilarDocuments handles insufficient embeddings',
   const results = await service.findSimilarDocuments('Query', documents);
 
   assert.strictEqual(results.length, 0);
+  assert.ok(service.client instanceof MockAIClient);
 });

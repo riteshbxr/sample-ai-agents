@@ -200,4 +200,70 @@ export class ClaudeClient extends AIClientInterface {
 
     return this.getTextContent(response);
   }
+
+  /**
+   * Create an assistant
+   * Note: Claude doesn't support OpenAI Assistants API
+   * @throws {Error} Claude doesn't support assistants
+   */
+  async createAssistant(_instructions, _tools = [], _options = {}) {
+    throw new Error(
+      'Claude does not support OpenAI Assistants API. Please use OpenAI for assistants functionality.'
+    );
+  }
+
+  /**
+   * Create a thread
+   * Note: Claude doesn't support OpenAI Assistants API
+   * @throws {Error} Claude doesn't support assistants
+   */
+  async createThread() {
+    throw new Error(
+      'Claude does not support OpenAI Assistants API. Please use OpenAI for assistants functionality.'
+    );
+  }
+
+  /**
+   * Add message to thread
+   * Note: Claude doesn't support OpenAI Assistants API
+   * @throws {Error} Claude doesn't support assistants
+   */
+  async addMessage(_threadId, _content, _role = 'user') {
+    throw new Error(
+      'Claude does not support OpenAI Assistants API. Please use OpenAI for assistants functionality.'
+    );
+  }
+
+  /**
+   * Get messages from thread
+   * Note: Claude doesn't support OpenAI Assistants API
+   * @throws {Error} Claude doesn't support assistants
+   */
+  async getMessages(_threadId, _options = {}) {
+    throw new Error(
+      'Claude does not support OpenAI Assistants API. Please use OpenAI for assistants functionality.'
+    );
+  }
+
+  /**
+   * Run assistant on thread
+   * Note: Claude doesn't support OpenAI Assistants API
+   * @throws {Error} Claude doesn't support assistants
+   */
+  async runAssistant(_threadId, _assistantId, _options = {}) {
+    throw new Error(
+      'Claude does not support OpenAI Assistants API. Please use OpenAI for assistants functionality.'
+    );
+  }
+
+  /**
+   * Retrieve run status
+   * Note: Claude doesn't support OpenAI Assistants API
+   * @throws {Error} Claude doesn't support assistants
+   */
+  async retrieveRun(_threadId, _runId) {
+    throw new Error(
+      'Claude does not support OpenAI Assistants API. Please use OpenAI for assistants functionality.'
+    );
+  }
 }

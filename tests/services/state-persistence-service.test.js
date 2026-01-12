@@ -76,16 +76,17 @@ test('CheckpointStore - separate threads maintain separate checkpoints', async (
 // StatefulAgent tests
 test('StatefulAgent - constructor initializes state', () => {
   const store = new CheckpointStore();
-  const agent = new StatefulAgent('openai', store);
+  const agent = new StatefulAgent('mock', store);
 
   assert.strictEqual(agent.state.step, 0);
   assert.ok(Array.isArray(agent.state.completed));
   assert.ok(typeof agent.state.results === 'object');
+  assert.ok(agent.client instanceof MockAIClient);
 });
 
 test('StatefulAgent - checkpoint saves state', async () => {
   const store = new CheckpointStore();
-  const agent = new StatefulAgent('openai', store);
+  const agent = new StatefulAgent('mock', store);
 
   agent.state.step = 2;
   agent.state.completed.push('step1', 'step2');
@@ -95,38 +96,40 @@ test('StatefulAgent - checkpoint saves state', async () => {
   assert.ok(checkpoint.id);
   assert.strictEqual(checkpoint.state.step, 2);
   assert.strictEqual(checkpoint.state.completed.length, 2);
+  assert.ok(agent.client instanceof MockAIClient);
 });
 
 test('StatefulAgent - restore state from checkpoint', async () => {
   const store = new CheckpointStore();
-  const agent = new StatefulAgent('openai', store);
+  const agent = new StatefulAgent('mock', store);
 
   agent.state.step = 3;
   agent.state.completed = ['step1', 'step2', 'step3'];
   await agent.checkpoint('thread_1');
 
   // Create new agent and restore
-  const agent2 = new StatefulAgent('openai', store);
+  const agent2 = new StatefulAgent('mock', store);
   const restored = await agent2.restore('thread_1');
 
   assert.strictEqual(restored, true);
   assert.strictEqual(agent2.state.step, 3);
   assert.strictEqual(agent2.state.completed.length, 3);
+  assert.ok(agent2.client instanceof MockAIClient);
 });
 
 test('StatefulAgent - restore returns false when no checkpoint', async () => {
   const store = new CheckpointStore();
-  const agent = new StatefulAgent('openai', store);
+  const agent = new StatefulAgent('mock', store);
 
   const restored = await agent.restore('thread_empty');
 
   assert.strictEqual(restored, false);
+  assert.ok(agent.client instanceof MockAIClient);
 });
 
 test('StatefulAgent - execute workflow', async () => {
   const store = new CheckpointStore();
-  const agent = new StatefulAgent('openai', store);
-  agent.client = new MockAIClient();
+  const agent = new StatefulAgent('mock', store);
 
   const steps = [
     {
@@ -153,11 +156,12 @@ test('StatefulAgent - execute workflow', async () => {
   assert.strictEqual(finalState.results.step2, 'result2');
   assert.strictEqual(finalState.metadata.step1Done, true);
   assert.strictEqual(finalState.metadata.step2Done, true);
+  assert.ok(agent.client instanceof MockAIClient);
 });
 
 test('StatefulAgent - execute workflow resumes from checkpoint', async () => {
   const store = new CheckpointStore();
-  const agent = new StatefulAgent('openai', store);
+  const agent = new StatefulAgent('mock', store);
 
   const steps = [
     {
@@ -180,17 +184,19 @@ test('StatefulAgent - execute workflow resumes from checkpoint', async () => {
   await agent.executeWorkflow('thread_1', [steps[0]]);
 
   // Create new agent and resume
-  const agent2 = new StatefulAgent('openai', store);
+  const agent2 = new StatefulAgent('mock', store);
   const finalState = await agent2.executeWorkflow('thread_1', steps);
 
   assert.strictEqual(finalState.step, 2);
   assert.ok(finalState.completed.includes('step1'));
   assert.ok(finalState.completed.includes('step2'));
+  assert.ok(agent.client instanceof MockAIClient);
+  assert.ok(agent2.client instanceof MockAIClient);
 });
 
 test('StatefulAgent - execute workflow handles interruption', async () => {
   const store = new CheckpointStore();
-  const agent = new StatefulAgent('openai', store);
+  const agent = new StatefulAgent('mock', store);
 
   const steps = [
     {
@@ -217,6 +223,7 @@ test('StatefulAgent - execute workflow handles interruption', async () => {
   const checkpoint = await store.getLatest('thread_1');
   assert.ok(checkpoint);
   assert.ok(checkpoint.state.completed.includes('step1'));
+  assert.ok(agent.client instanceof MockAIClient);
 });
 
 // TaskStateManager tests

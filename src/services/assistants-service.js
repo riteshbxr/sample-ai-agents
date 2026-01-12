@@ -39,10 +39,7 @@ export class AssistantsService {
    * @returns {Promise<Object>} Created message
    */
   async addMessage(threadId, content, role = 'user') {
-    return await this.client.client.beta.threads.messages.create(threadId, {
-      role,
-      content,
-    });
+    return await this.client.addMessage(threadId, content, role);
   }
 
   /**
@@ -53,15 +50,12 @@ export class AssistantsService {
    * @returns {Promise<Object>} Run object
    */
   async runAssistant(threadId, assistantId, options = {}) {
-    let run = await this.client.client.beta.threads.runs.create(threadId, {
-      assistant_id: assistantId,
-      ...options,
-    });
+    let run = await this.client.runAssistant(threadId, assistantId, options);
 
     // Poll for completion
     while (run.status === 'queued' || run.status === 'in_progress') {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      run = await this.client.client.beta.threads.runs.retrieve(threadId, run.id);
+      run = await this.client.retrieveRun(threadId, run.id);
     }
 
     return run;
@@ -74,8 +68,7 @@ export class AssistantsService {
    * @returns {Promise<Array>} Array of messages
    */
   async getMessages(threadId, options = {}) {
-    const messages = await this.client.client.beta.threads.messages.list(threadId, options);
-    return messages.data;
+    return await this.client.getMessages(threadId, options);
   }
 
   /**

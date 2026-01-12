@@ -57,20 +57,13 @@ test('AssistantsService - add message to thread', async () => {
   const service = new AssistantsService();
   service.client = mockClient;
 
-  service.client.client = {
-    beta: {
-      threads: {
-        messages: {
-          create: async (threadId, messageData) => ({
-            id: 'msg_123',
-            thread_id: threadId,
-            role: messageData.role,
-            content: [{ type: 'text', text: { value: messageData.content } }],
-          }),
-        },
-      },
-    },
-  };
+  // Mock the addMessage method
+  service.client.addMessage = async (threadId, content, role) => ({
+    id: 'msg_123',
+    thread_id: threadId,
+    role,
+    content: [{ type: 'text', text: { value: content } }],
+  });
 
   const message = await service.addMessage('thread_123', 'Hello!', 'user');
 
@@ -85,39 +78,29 @@ test('AssistantsService - run assistant', async () => {
   service.client = mockClient;
 
   let pollCount = 0;
-  service.client.client = {
-    beta: {
-      threads: {
-        runs: {
-          create: async (threadId, data) => ({
-            id: 'run_123',
-            thread_id: threadId,
-            assistant_id: data.assistant_id,
-            status: 'queued',
-          }),
-          retrieve: async (threadId, runId) => {
-            pollCount++;
-            return {
-              id: runId,
-              thread_id: threadId,
-              status: pollCount > 2 ? 'completed' : 'in_progress',
-            };
-          },
-        },
-        messages: {
-          list: async (threadId) => ({
-            data: [
-              {
-                id: 'msg_456',
-                role: 'assistant',
-                content: [{ type: 'text', text: { value: 'Assistant response' } }],
-              },
-            ],
-          }),
-        },
-      },
-    },
+  service.client.runAssistant = async (threadId, assistantId) => ({
+    id: 'run_123',
+    thread_id: threadId,
+    assistant_id: assistantId,
+    status: 'queued',
+  });
+
+  service.client.retrieveRun = async (threadId, runId) => {
+    pollCount++;
+    return {
+      id: runId,
+      thread_id: threadId,
+      status: pollCount > 2 ? 'completed' : 'in_progress',
+    };
   };
+
+  service.client.getMessages = async (threadId) => [
+    {
+      id: 'msg_456',
+      role: 'assistant',
+      content: [{ type: 'text', text: { value: 'Assistant response' } }],
+    },
+  ];
 
   const run = await service.runAssistant('thread_123', 'asst_123');
 
@@ -134,28 +117,18 @@ test('AssistantsService - get messages', async () => {
   const service = new AssistantsService();
   service.client = mockClient;
 
-  service.client.client = {
-    beta: {
-      threads: {
-        messages: {
-          list: async (threadId) => ({
-            data: [
-              {
-                id: 'msg_1',
-                role: 'user',
-                content: [{ type: 'text', text: { value: 'Hello' } }],
-              },
-              {
-                id: 'msg_2',
-                role: 'assistant',
-                content: [{ type: 'text', text: { value: 'Hi there!' } }],
-              },
-            ],
-          }),
-        },
-      },
+  service.client.getMessages = async (threadId) => [
+    {
+      id: 'msg_1',
+      role: 'user',
+      content: [{ type: 'text', text: { value: 'Hello' } }],
     },
-  };
+    {
+      id: 'msg_2',
+      role: 'assistant',
+      content: [{ type: 'text', text: { value: 'Hi there!' } }],
+    },
+  ];
 
   const messages = await service.getMessages('thread_123');
 
@@ -169,23 +142,13 @@ test('AssistantsService - get assistant response extracts content', async () => 
   const service = new AssistantsService();
   service.client = mockClient;
 
-  service.client.client = {
-    beta: {
-      threads: {
-        messages: {
-          list: async () => ({
-            data: [
-              {
-                id: 'msg_1',
-                role: 'assistant',
-                content: [{ type: 'text', text: { value: 'Test message' } }],
-              },
-            ],
-          }),
-        },
-      },
+  service.client.getMessages = async () => [
+    {
+      id: 'msg_1',
+      role: 'assistant',
+      content: [{ type: 'text', text: { value: 'Test message' } }],
     },
-  };
+  ];
 
   const content = await service.getAssistantResponse('thread_123');
   assert.strictEqual(content, 'Test message');
@@ -196,23 +159,13 @@ test('AssistantsService - get assistant response returns null when no assistant 
   const service = new AssistantsService();
   service.client = mockClient;
 
-  service.client.client = {
-    beta: {
-      threads: {
-        messages: {
-          list: async () => ({
-            data: [
-              {
-                id: 'msg_1',
-                role: 'user',
-                content: [{ type: 'text', text: { value: 'Hello' } }],
-              },
-            ],
-          }),
-        },
-      },
+  service.client.getMessages = async () => [
+    {
+      id: 'msg_1',
+      role: 'user',
+      content: [{ type: 'text', text: { value: 'Hello' } }],
     },
-  };
+  ];
 
   const content = await service.getAssistantResponse('thread_123');
   assert.strictEqual(content, null);
@@ -233,39 +186,30 @@ test('AssistantsService - complete conversation (end-to-end)', async () => {
 
   service.client.createThread = async () => ({ id: 'thread_456' });
 
-  service.client.client = {
-    beta: {
-      threads: {
-        messages: {
-          create: async (threadId, data) => {
-            messageAdded = true;
-            return {
-              id: 'msg_789',
-              thread_id: threadId,
-              role: data.role,
-              content: [{ type: 'text', text: { value: data.content } }],
-            };
-          },
-          list: async () => ({
-            data: [
-              {
-                id: 'msg_result',
-                role: 'assistant',
-                content: [{ type: 'text', text: { value: 'End-to-end response' } }],
-              },
-            ],
-          }),
-        },
-        runs: {
-          create: async () => {
-            runExecuted = true;
-            return { id: 'run_789', status: 'queued' };
-          },
-          retrieve: async () => ({ id: 'run_789', status: 'completed' }),
-        },
-      },
-    },
+  service.client.addMessage = async (threadId, content, role) => {
+    messageAdded = true;
+    return {
+      id: 'msg_789',
+      thread_id: threadId,
+      role,
+      content: [{ type: 'text', text: { value: content } }],
+    };
   };
+
+  service.client.getMessages = async () => [
+    {
+      id: 'msg_result',
+      role: 'assistant',
+      content: [{ type: 'text', text: { value: 'End-to-end response' } }],
+    },
+  ];
+
+  service.client.runAssistant = async () => {
+    runExecuted = true;
+    return { id: 'run_789', status: 'queued' };
+  };
+
+  service.client.retrieveRun = async () => ({ id: 'run_789', status: 'completed' });
 
   const assistant = await service.createAssistant('You are helpful');
   const thread = await service.createThread();
@@ -281,25 +225,18 @@ test('AssistantsService - complete conversation throws on failed run', async () 
   const service = new AssistantsService();
   service.client = mockClient;
 
-  service.client.client = {
-    beta: {
-      threads: {
-        messages: {
-          create: async () => ({
-            id: 'msg_1',
-            thread_id: 'thread_1',
-            role: 'user',
-            content: [{ type: 'text', text: { value: 'Hello' } }],
-          }),
-          list: async () => ({ data: [] }),
-        },
-        runs: {
-          create: async () => ({ id: 'run_1', status: 'queued' }),
-          retrieve: async () => ({ id: 'run_1', status: 'failed' }),
-        },
-      },
-    },
-  };
+  service.client.addMessage = async () => ({
+    id: 'msg_1',
+    thread_id: 'thread_1',
+    role: 'user',
+    content: [{ type: 'text', text: { value: 'Hello' } }],
+  });
+
+  service.client.getMessages = async () => [];
+
+  service.client.runAssistant = async () => ({ id: 'run_1', status: 'queued' });
+
+  service.client.retrieveRun = async () => ({ id: 'run_1', status: 'failed' });
 
   await assert.rejects(
     async () => {

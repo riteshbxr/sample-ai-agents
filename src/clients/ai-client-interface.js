@@ -130,6 +130,106 @@ export class AIClientInterface {
       'getEmbeddings() method must be implemented by subclass. Unsupported providers should throw an error.'
     );
   }
+
+  /**
+   * Analyze an image with a text prompt
+   * Note: Not all providers support vision. Unsupported providers should throw an error.
+   * @param {string} imageBase64 - Base64 encoded image
+   * @param {string} prompt - Text prompt for analysis
+   * @param {Object} [options={}] - Additional options (model, max_tokens, etc.)
+   * @returns {Promise<string>} Analysis result
+   * @throws {Error} If vision is not supported by the provider
+   */
+  async analyzeImage(_imageBase64, _prompt, _options = {}) {
+    throw new Error(
+      'analyzeImage() method must be implemented by subclass. Unsupported providers should throw an error.'
+    );
+  }
+
+  /**
+   * Create an assistant
+   * Note: Not all providers support assistants. Unsupported providers should throw an error.
+   * @param {string} instructions - Assistant instructions
+   * @param {Array} tools - Array of tool definitions
+   * @param {Object} [options={}] - Additional options (model, name, etc.)
+   * @returns {Promise<Object>} Created assistant
+   * @throws {Error} If assistants are not supported by the provider
+   */
+  async createAssistant(_instructions, _tools = [], _options = {}) {
+    throw new Error(
+      'createAssistant() method must be implemented by subclass. Unsupported providers should throw an error.'
+    );
+  }
+
+  /**
+   * Create a thread
+   * Note: Not all providers support assistants. Unsupported providers should throw an error.
+   * @returns {Promise<Object>} Created thread
+   * @throws {Error} If assistants are not supported by the provider
+   */
+  async createThread() {
+    throw new Error(
+      'createThread() method must be implemented by subclass. Unsupported providers should throw an error.'
+    );
+  }
+
+  /**
+   * Add message to thread
+   * Note: Not all providers support assistants. Unsupported providers should throw an error.
+   * @param {string} threadId - Thread ID
+   * @param {string} content - Message content
+   * @param {string} [role='user'] - Message role
+   * @returns {Promise<Object>} Created message
+   * @throws {Error} If assistants are not supported by the provider
+   */
+  async addMessage(_threadId, _content, _role = 'user') {
+    throw new Error(
+      'addMessage() method must be implemented by subclass. Unsupported providers should throw an error.'
+    );
+  }
+
+  /**
+   * Get messages from thread
+   * Note: Not all providers support assistants. Unsupported providers should throw an error.
+   * @param {string} threadId - Thread ID
+   * @param {Object} [options={}] - Options (limit, order, etc.)
+   * @returns {Promise<Array>} Array of messages
+   * @throws {Error} If assistants are not supported by the provider
+   */
+  async getMessages(_threadId, _options = {}) {
+    throw new Error(
+      'getMessages() method must be implemented by subclass. Unsupported providers should throw an error.'
+    );
+  }
+
+  /**
+   * Run assistant on thread
+   * Note: Not all providers support assistants. Unsupported providers should throw an error.
+   * @param {string} threadId - Thread ID
+   * @param {string} assistantId - Assistant ID
+   * @param {Object} [options={}] - Additional options
+   * @returns {Promise<Object>} Run object
+   * @throws {Error} If assistants are not supported by the provider
+   */
+  async runAssistant(_threadId, _assistantId, _options = {}) {
+    throw new Error(
+      'runAssistant() method must be implemented by subclass. Unsupported providers should throw an error.'
+    );
+  }
+
+  /**
+   * Retrieve run status
+   * Note: Not all providers support assistants. Unsupported providers should throw an error.
+   * @param {string} threadId - Thread ID
+   * @param {string} runId - Run ID
+   * @returns {Promise<Object>} Run object with current status
+   * @throws {Error} If assistants are not supported by the provider
+   */
+  async retrieveRun(_threadId, _runId) {
+    throw new Error(
+      'retrieveRun() method must be implemented by subclass. Unsupported providers should throw an error.'
+    );
+  }
 }
 
 /**

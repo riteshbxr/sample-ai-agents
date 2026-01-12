@@ -280,7 +280,8 @@ ai-agents/
 │   ├── menu.js                      # Interactive example selector
 │   ├── clients/
 │   │   ├── ai-client-interface.js  # Unified client interface
-│   │   ├── openai-client.js         # OpenAI API client
+│   │   ├── azure-openai-client.js  # Azure OpenAI API client
+│   │   ├── standard-openai-client.js # Standard OpenAI API client
 │   │   ├── claude-client.js         # Claude API client
 │   │   └── README.md                # Client interface documentation
 │   ├── agents/

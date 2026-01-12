@@ -170,9 +170,10 @@ export class AzureOpenAIClient extends AIClientInterface {
    * Note: Assistants API is only available with OpenAI, not Azure OpenAI
    * @param {string} instructions - System instructions for the assistant
    * @param {Array} tools - Tools/functions the assistant can use
+   * @param {Object} [options={}] - Additional options (model, name, etc.)
    * @returns {Promise<Object>} Assistant object
    */
-  async createAssistant(instructions, tools = []) {
+  async createAssistant(instructions, tools = [], options = {}) {
     if (this.isAzure) {
       throw new Error(
         'Assistants API is not supported with Azure OpenAI. Please use OpenAI direct API (OPENAI_API_KEY) instead of Azure OpenAI.'
@@ -180,10 +181,11 @@ export class AzureOpenAIClient extends AIClientInterface {
     }
 
     const assistant = await this.client.beta.assistants.create({
-      name: 'AI Agent',
+      name: options.name || 'AI Agent',
       instructions,
-      model: this.model,
+      model: options.model || this.model,
       tools,
+      ...options,
     });
     return assistant;
   }
@@ -205,32 +207,79 @@ export class AzureOpenAIClient extends AIClientInterface {
   }
 
   /**
-   * Run assistant on a thread
-   * Note: Assistants API is only available with OpenAI, not Azure OpenAI
+   * Add message to thread
    * @param {string} threadId - Thread ID
-   * @param {string} assistantId - Assistant ID
-   * @param {string} userMessage - User's message
-   * @returns {Promise<Object>} Run object
+   * @param {string} content - Message content
+   * @param {string} [role='user'] - Message role
+   * @returns {Promise<Object>} Created message
    */
-  async runAssistant(threadId, assistantId, userMessage) {
+  async addMessage(threadId, content, role = 'user') {
     if (this.isAzure) {
       throw new Error(
         'Assistants API is not supported with Azure OpenAI. Please use OpenAI direct API (OPENAI_API_KEY) instead of Azure OpenAI.'
       );
     }
 
-    // Add message to thread
-    await this.client.beta.threads.messages.create(threadId, {
-      role: 'user',
-      content: userMessage,
+    return await this.client.beta.threads.messages.create(threadId, {
+      role,
+      content,
     });
+  }
 
-    // Run the assistant
+  /**
+   * Get messages from thread
+   * @param {string} threadId - Thread ID
+   * @param {Object} [options={}] - Options (limit, order, etc.)
+   * @returns {Promise<Array>} Array of messages
+   */
+  async getMessages(threadId, options = {}) {
+    if (this.isAzure) {
+      throw new Error(
+        'Assistants API is not supported with Azure OpenAI. Please use OpenAI direct API (OPENAI_API_KEY) instead of Azure OpenAI.'
+      );
+    }
+
+    const messages = await this.client.beta.threads.messages.list(threadId, options);
+    return messages.data;
+  }
+
+  /**
+   * Run assistant on a thread
+   * Note: Assistants API is only available with OpenAI, not Azure OpenAI
+   * @param {string} threadId - Thread ID
+   * @param {string} assistantId - Assistant ID
+   * @param {Object} [options={}] - Additional options
+   * @returns {Promise<Object>} Run object
+   */
+  async runAssistant(threadId, assistantId, options = {}) {
+    if (this.isAzure) {
+      throw new Error(
+        'Assistants API is not supported with Azure OpenAI. Please use OpenAI direct API (OPENAI_API_KEY) instead of Azure OpenAI.'
+      );
+    }
+
     const run = await this.client.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
+      ...options,
     });
 
     return run;
+  }
+
+  /**
+   * Retrieve run status
+   * @param {string} threadId - Thread ID
+   * @param {string} runId - Run ID
+   * @returns {Promise<Object>} Run object with current status
+   */
+  async retrieveRun(threadId, runId) {
+    if (this.isAzure) {
+      throw new Error(
+        'Assistants API is not supported with Azure OpenAI. Please use OpenAI direct API (OPENAI_API_KEY) instead of Azure OpenAI.'
+      );
+    }
+
+    return await this.client.beta.threads.runs.retrieve(threadId, runId);
   }
 
   /**

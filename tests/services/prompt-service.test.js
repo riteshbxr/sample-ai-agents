@@ -4,13 +4,14 @@ import { PromptService } from '../../src/services/prompt-service.js';
 import { MockAIClient } from '../../src/clients/mock-client.js';
 
 test('PromptService - constructor with explicit provider', () => {
-  const service = new PromptService('openai');
-  assert.strictEqual(service.provider, 'openai');
+  const service = new PromptService('mock');
+  assert.strictEqual(service.provider, 'mock');
   assert.ok(service.client);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('PromptService - create few-shot prompt', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const examples = [
     { input: 'I love this!', output: 'positive' },
@@ -31,7 +32,7 @@ test('PromptService - create few-shot prompt', () => {
 });
 
 test('PromptService - create few-shot prompt without task description', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const examples = [{ input: 'Hello', output: 'Hi' }];
   const prompt = service.createFewShotPrompt(examples, 'Goodbye');
@@ -43,7 +44,7 @@ test('PromptService - create few-shot prompt without task description', () => {
 });
 
 test('PromptService - create chain-of-thought prompt', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const prompt = service.createChainOfThoughtPrompt('Solve 2x + 5 = 15');
 
@@ -53,7 +54,7 @@ test('PromptService - create chain-of-thought prompt', () => {
 });
 
 test('PromptService - create chain-of-thought prompt with steps array', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const steps = ['Isolate x', 'Divide by coefficient', 'Check answer'];
   const prompt = service.createChainOfThoughtPrompt('Solve equation', steps);
@@ -64,7 +65,7 @@ test('PromptService - create chain-of-thought prompt with steps array', () => {
 });
 
 test('PromptService - create chain-of-thought prompt with steps string', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const prompt = service.createChainOfThoughtPrompt('Problem', 'Step 1: Do this');
 
@@ -72,7 +73,7 @@ test('PromptService - create chain-of-thought prompt with steps string', () => {
 });
 
 test('PromptService - create role-playing prompt', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const prompt = service.createRolePlayingPrompt('a math teacher', 'Explain algebra');
 
@@ -81,7 +82,7 @@ test('PromptService - create role-playing prompt', () => {
 });
 
 test('PromptService - create role-based prompt', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const prompt = service.createRoleBasedPrompt('a chef', 'Write a recipe', 'for beginners');
 
@@ -91,7 +92,7 @@ test('PromptService - create role-based prompt', () => {
 });
 
 test('PromptService - create role-based prompt without audience', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const prompt = service.createRoleBasedPrompt('a writer', 'Write a story');
 
@@ -100,7 +101,7 @@ test('PromptService - create role-based prompt without audience', () => {
 });
 
 test('PromptService - create formatting prompt with string format', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const prompt = service.createFormattingPrompt('Extract data', 'JSON format');
 
@@ -110,7 +111,7 @@ test('PromptService - create formatting prompt with string format', () => {
 });
 
 test('PromptService - create formatting prompt with object format', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const format = { type: 'object', properties: { name: { type: 'string' } } };
   const prompt = service.createFormattingPrompt('Extract person', format);
@@ -120,7 +121,7 @@ test('PromptService - create formatting prompt with object format', () => {
 });
 
 test('PromptService - create constrained prompt', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const constraints = {
     maxLength: 100,
@@ -135,7 +136,7 @@ test('PromptService - create constrained prompt', () => {
 });
 
 test('PromptService - create structured output prompt', () => {
-  const service = new PromptService('openai');
+  const service = new PromptService('mock');
 
   const schema = {
     type: 'object',
@@ -152,12 +153,10 @@ test('PromptService - create structured output prompt', () => {
 });
 
 test('PromptService - few-shot learning execution', async () => {
-  const mockClient = new MockAIClient({
+  const service = new PromptService('mock');
+  service.client = new MockAIClient({
     defaultResponse: 'positive',
   });
-
-  const service = new PromptService('openai');
-  service.client = mockClient;
 
   const examples = [
     { input: 'Great product', output: 'positive' },
@@ -167,41 +166,38 @@ test('PromptService - few-shot learning execution', async () => {
   const result = await service.fewShotLearning(examples, 'Amazing!', 'Classify sentiment');
 
   assert.strictEqual(result, 'positive');
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('PromptService - chain-of-thought execution', async () => {
-  const mockClient = new MockAIClient({
+  const service = new PromptService('mock');
+  service.client = new MockAIClient({
     defaultResponse: 'x = 5',
   });
-
-  const service = new PromptService('openai');
-  service.client = mockClient;
 
   const result = await service.chainOfThought('Solve 2x + 5 = 15');
 
   assert.ok(result.includes('x = 5') || result.includes('5'));
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('PromptService - role-playing execution', async () => {
-  const mockClient = new MockAIClient({
+  const service = new PromptService('mock');
+  service.client = new MockAIClient({
     defaultResponse: 'As a teacher, I would explain...',
   });
-
-  const service = new PromptService('openai');
-  service.client = mockClient;
 
   const result = await service.rolePlaying('a math teacher', 'Explain algebra');
 
   assert.ok(result.includes('teacher') || result.length > 0);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('PromptService - self-consistency check', async () => {
-  const mockClient = new MockAIClient({
+  const service = new PromptService('mock');
+  service.client = new MockAIClient({
     defaultResponse: 'Consistent answer',
   });
-
-  const service = new PromptService('openai');
-  service.client = mockClient;
 
   const result = await service.selfConsistency('What is 2+2?', 3);
 
@@ -209,10 +205,12 @@ test('PromptService - self-consistency check', async () => {
   assert.ok(result.mostCommonAnswer !== undefined);
   assert.ok(Array.isArray(result.allAnswers));
   assert.ok(result.confidence >= 0 && result.confidence <= 1);
+  assert.ok(service.client instanceof MockAIClient);
 });
 
 test('PromptService - extract structured data', async () => {
-  const mockClient = new MockAIClient({
+  const service = new PromptService('mock');
+  service.client = new MockAIClient({
     chatHandler: async () => {
       return {
         choices: [
@@ -227,9 +225,6 @@ test('PromptService - extract structured data', async () => {
     },
   });
 
-  const service = new PromptService('openai');
-  service.client = mockClient;
-
   const schema = {
     type: 'object',
     properties: {
@@ -242,4 +237,5 @@ test('PromptService - extract structured data', async () => {
 
   assert.ok(typeof result === 'object');
   assert.ok(result.name || result.age);
+  assert.ok(service.client instanceof MockAIClient);
 });

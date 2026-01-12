@@ -180,6 +180,191 @@ export class MockAIClient extends AIClientInterface {
   }
 
   /**
+   * Create an assistant
+   * @param {string} instructions - Assistant instructions
+   * @param {Array} tools - Array of tool definitions
+   * @param {Object} [options={}] - Additional options
+   * @returns {Promise<Object>} Created assistant
+   */
+  async createAssistant(instructions, tools = [], options = {}) {
+    this.callHistory.push({
+      method: 'createAssistant',
+      instructions,
+      tools,
+      options,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `asst_${Date.now()}`,
+      object: 'assistant',
+      created_at: Math.floor(Date.now() / 1000),
+      name: options.name || 'Mock Assistant',
+      description: null,
+      model: options.model || this.model,
+      instructions,
+      tools,
+      tool_resources: null,
+      metadata: {},
+      temperature: options.temperature || 1,
+      top_p: options.top_p || 1,
+    };
+  }
+
+  /**
+   * Create a thread
+   * @returns {Promise<Object>} Created thread
+   */
+  async createThread() {
+    this.callHistory.push({
+      method: 'createThread',
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `thread_${Date.now()}`,
+      object: 'thread',
+      created_at: Math.floor(Date.now() / 1000),
+      metadata: {},
+    };
+  }
+
+  /**
+   * Add message to thread
+   * @param {string} threadId - Thread ID
+   * @param {string} content - Message content
+   * @param {string} [role='user'] - Message role
+   * @returns {Promise<Object>} Created message
+   */
+  async addMessage(threadId, content, role = 'user') {
+    this.callHistory.push({
+      method: 'addMessage',
+      threadId,
+      content,
+      role,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `msg_${Date.now()}`,
+      object: 'thread.message',
+      created_at: Math.floor(Date.now() / 1000),
+      thread_id: threadId,
+      role,
+      content: [
+        {
+          type: 'text',
+          text: {
+            value: content,
+            annotations: [],
+          },
+        },
+      ],
+      assistant_id: null,
+      run_id: null,
+      metadata: {},
+    };
+  }
+
+  /**
+   * Get messages from thread
+   * @param {string} threadId - Thread ID
+   * @param {Object} [options={}] - Options (limit, order, etc.)
+   * @returns {Promise<Array>} Array of messages
+   */
+  async getMessages(threadId, options = {}) {
+    this.callHistory.push({
+      method: 'getMessages',
+      threadId,
+      options,
+      timestamp: Date.now(),
+    });
+
+    // Return empty array by default, can be customized with handlers
+    return [];
+  }
+
+  /**
+   * Run assistant on thread
+   * @param {string} threadId - Thread ID
+   * @param {string} assistantId - Assistant ID
+   * @param {Object} [options={}] - Additional options
+   * @returns {Promise<Object>} Run object
+   */
+  async runAssistant(threadId, assistantId, options = {}) {
+    this.callHistory.push({
+      method: 'runAssistant',
+      threadId,
+      assistantId,
+      options,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `run_${Date.now()}`,
+      object: 'thread.run',
+      created_at: Math.floor(Date.now() / 1000),
+      thread_id: threadId,
+      assistant_id: assistantId,
+      status: 'completed',
+      started_at: Math.floor(Date.now() / 1000),
+      expires_at: null,
+      cancelled_at: null,
+      failed_at: null,
+      completed_at: Math.floor(Date.now() / 1000),
+      last_error: null,
+      model: this.model,
+      instructions: null,
+      tools: [],
+      metadata: {},
+      usage: {
+        prompt_tokens: 10,
+        completion_tokens: 20,
+        total_tokens: 30,
+      },
+    };
+  }
+
+  /**
+   * Retrieve run status
+   * @param {string} threadId - Thread ID
+   * @param {string} runId - Run ID
+   * @returns {Promise<Object>} Run object with current status
+   */
+  async retrieveRun(threadId, runId) {
+    this.callHistory.push({
+      method: 'retrieveRun',
+      threadId,
+      runId,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: runId,
+      object: 'thread.run',
+      created_at: Math.floor(Date.now() / 1000),
+      thread_id: threadId,
+      assistant_id: 'asst_mock',
+      status: 'completed',
+      started_at: Math.floor(Date.now() / 1000),
+      expires_at: null,
+      cancelled_at: null,
+      failed_at: null,
+      completed_at: Math.floor(Date.now() / 1000),
+      last_error: null,
+      model: this.model,
+      instructions: null,
+      tools: [],
+      metadata: {},
+      usage: {
+        prompt_tokens: 10,
+        completion_tokens: 20,
+        total_tokens: 30,
+      },
+    };
+  }
+
+  /**
    * Get text content from response
    * @param {Object} response - API response object
    * @returns {string} Text content

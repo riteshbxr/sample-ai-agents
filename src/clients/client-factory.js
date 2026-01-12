@@ -5,7 +5,7 @@
  * circular dependencies between the interface and concrete implementations.
  */
 
-import { AzureOpenAIClient } from './openai-client.js';
+import { AzureOpenAIClient } from './azure-openai-client.js';
 import { StandardOpenAIClient } from './standard-openai-client.js';
 import { ClaudeClient } from './claude-client.js';
 import { MockAIClient } from './mock-client.js';
