@@ -16,6 +16,13 @@ export class ChatService {
    * @param {Array} messages - Array of message objects with role and content
    * @param {Object} options - Additional options (temperature, max_tokens, etc.)
    * @returns {Promise<Object>} AI response
+   * @example
+   * const service = new ChatService();
+   * const response = await service.chat([
+   *   { role: 'user', content: 'What is AI?' }
+   * ], { temperature: 0.7 });
+   * console.log(response.content);
+   * // Output: "AI is artificial intelligence..."
    */
   async chat(messages, options = {}) {
     const response = await this.client.chat(messages, options);
@@ -32,6 +39,13 @@ export class ChatService {
    * @param {Function} onChunk - Callback function for each chunk
    * @param {Object} options - Additional options
    * @returns {Promise<string>} Full response text
+   * @example
+   * const service = new ChatService();
+   * const fullText = await service.chatStream(
+   *   [{ role: 'user', content: 'Tell me a story' }],
+   *   (chunk) => process.stdout.write(chunk)
+   * );
+   * console.log('\nFull response:', fullText);
    */
   async chatStream(messages, onChunk, options = {}) {
     let fullResponse = '';
@@ -53,6 +67,12 @@ export class ChatService {
    * @param {Array} messages - Array of message objects
    * @param {Object} options - Additional options
    * @returns {Promise<Object>} Parsed JSON object
+   * @example
+   * const service = new ChatService();
+   * const data = await service.getStructuredOutput([
+   *   { role: 'user', content: 'Extract name and age from: John is 30 years old' }
+   * ]);
+   * console.log(data); // { name: "John", age: 30 }
    */
   async getStructuredOutput(messages, options = {}) {
     const chatOptions = {
@@ -77,6 +97,18 @@ export class ChatService {
    * @param {string|Array} schema - Schema description or field list
    * @param {Object} options - Additional options
    * @returns {Promise<Object>} Extracted structured data
+   * @example
+   * const service = new ChatService();
+   * // Using array of fields
+   * const data1 = await service.extractStructuredData(
+   *   'Contact: Alice, email: alice@example.com',
+   *   ['name', 'email']
+   * );
+   * // Using schema description
+   * const data2 = await service.extractStructuredData(
+   *   'Product: Laptop, Price: $999',
+   *   'Extract product name and price'
+   * );
    */
   async extractStructuredData(text, schema, options = {}) {
     const schemaDescription = Array.isArray(schema)

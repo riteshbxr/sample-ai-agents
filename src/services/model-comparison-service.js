@@ -25,6 +25,15 @@ export class ModelComparisonService {
    * @param {string|Array} messages - Message(s) to send
    * @param {Object} options - Options for each model (can be global or provider-specific)
    * @returns {Promise<Object>} Responses from each model
+   * @example
+   * const service = new ModelComparisonService();
+   * const results = await service.compareModels('What is AI?', {
+   *   temperature: 0.7,
+   *   openai: { max_tokens: 100 },
+   *   claude: { max_tokens: 200 }
+   * });
+   * console.log(results.openai.content);
+   * console.log(results.claude.content);
    */
   async compareModels(messages, options = {}) {
     const messageArray = Array.isArray(messages) ? messages : [{ role: 'user', content: messages }];
@@ -97,6 +106,12 @@ export class ModelComparisonService {
    * @param {string} query - Query to compare
    * @param {Object} options - Options for each model
    * @returns {Promise<Object>} Comparison results
+   * @example
+   * const service = new ModelComparisonService();
+   * const results = await service.compareQuery('Explain quantum computing', {
+   *   temperature: 0.8
+   * });
+   * // Results will have structure: {openai?: {content, model, raw}, claude?: {content, model, raw}}
    */
   async compareQuery(query, options = {}) {
     return this.compareModels([{ role: 'user', content: query }], options);
@@ -105,6 +120,11 @@ export class ModelComparisonService {
   /**
    * Get available models
    * @returns {Array<string>} List of available model names
+   * @example
+   * const service = new ModelComparisonService();
+   * const models = service.getAvailableModels();
+   * console.log(`Available models: ${models.join(', ')}`);
+   * // Output: "Available models: openai, claude"
    */
   getAvailableModels() {
     return Object.keys(this.clients);
@@ -115,6 +135,11 @@ export class ModelComparisonService {
    * @param {string|Array} messages - Message(s) to send
    * @param {Object} options - Options for each model
    * @returns {Promise<Object>} Analysis with responses and comparison
+   * @example
+   * const service = new ModelComparisonService();
+   * const analysis = await service.analyzeDifferences('What is machine learning?');
+   * console.log(analysis.comparison.differences);
+   * // Output: "response length varies from 50 to 200 characters; Common themes: machine, learning, AI"
    */
   async analyzeDifferences(messages, options = {}) {
     const responses = await this.compareModels(messages, options);
@@ -156,6 +181,18 @@ export class ModelComparisonService {
    * Create a side-by-side comparison string
    * @param {Object} responses - Responses object from compareModels
    * @returns {string} Formatted comparison string
+   * @example
+   * const service = new ModelComparisonService();
+   * const results = await service.compareModels('Test query');
+   * const formatted = service.sideBySideComparison(results);
+   * console.log(formatted);
+   * // Output:
+   * // === OPENAI (gpt-4) ===
+   * // Length: 25 characters
+   * // Content: OpenAI response...
+   * // === CLAUDE (claude-sonnet-4-5) ===
+   * // Length: 30 characters
+   * // Content: Claude response...
    */
   sideBySideComparison(responses) {
     const lines = [];

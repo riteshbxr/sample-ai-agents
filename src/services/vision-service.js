@@ -42,6 +42,16 @@ export class VisionService {
    * @param {string} prompt - Text prompt for analysis
    * @param {Object} options - Additional options
    * @returns {Promise<string>} Analysis result
+   * @example
+   * const service = new VisionService();
+   * // Using file path
+   * const result = await service.analyzeImage('./image.png', 'What is in this image?');
+   * // Using base64
+   * const base64 = service.createTestImageBase64();
+   * const result2 = await service.analyzeImage(base64, 'Describe this image', {
+   *   temperature: 0.7,
+   *   max_tokens: 500
+   * });
    */
   async analyzeImage(image, prompt, options = {}) {
     let imageBase64 = null;
@@ -79,6 +89,12 @@ export class VisionService {
    * @param {string|Buffer} image - Image to extract text from
    * @param {Object} options - Additional options
    * @returns {Promise<string>} Extracted text
+   * @example
+   * const service = new VisionService();
+   * // Extract text from a document image
+   * const text = await service.extractText('./document.png');
+   * console.log('Extracted text:', text);
+   * // Output: "Extracted text: Hello World\nThis is a document..."
    */
   async extractText(image, options = {}) {
     const prompt =
@@ -92,6 +108,17 @@ export class VisionService {
    * @param {string|Array<string>} questions - Question(s) to ask
    * @param {Object} options - Additional options
    * @returns {Promise<string|Object>} Answer(s) to question(s)
+   * @example
+   * const service = new VisionService();
+   * // Single question
+   * const answer = await service.answerQuestions('./photo.jpg', 'What is in this image?');
+   * // Multiple questions
+   * const answers = await service.answerQuestions('./photo.jpg', [
+   *   'What is in this image?',
+   *   'What colors are present?',
+   *   'Describe the scene'
+   * ]);
+   * console.log(answers['What is in this image?']);
    */
   async answerQuestions(image, questions, options = {}) {
     const questionList = Array.isArray(questions) ? questions : [questions];

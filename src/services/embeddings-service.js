@@ -16,6 +16,13 @@ export class EmbeddingsService {
    * Get embeddings for texts
    * @param {string|Array<string>} texts - Text(s) to embed
    * @returns {Promise<Array<Array<number>>>} Array of embedding vectors
+   * @example
+   * const service = new EmbeddingsService();
+   * // Single text
+   * const embeddings = await service.getEmbeddings('Hello world');
+   * // Multiple texts
+   * const embeddings = await service.getEmbeddings(['Text 1', 'Text 2', 'Text 3']);
+   * console.log(embeddings[0].length); // e.g., 1536 (embedding dimension)
    */
   async getEmbeddings(texts) {
     const textArray = Array.isArray(texts) ? texts : [texts];
@@ -28,6 +35,15 @@ export class EmbeddingsService {
    * @param {Array<string>} documents - Documents to search
    * @param {Object} options - Options (topK, threshold)
    * @returns {Promise<Array>} Sorted array of {document, similarity, index}
+   * @example
+   * const service = new EmbeddingsService();
+   * const results = await service.findSimilarDocuments(
+   *   'What is machine learning?',
+   *   ['Document about AI', 'Document about ML', 'Document about cooking'],
+   *   { topK: 2, threshold: 0.7 }
+   * );
+   * console.log(results[0].document); // Most similar document
+   * console.log(results[0].similarity); // Similarity score (0-1)
    */
   async findSimilarDocuments(query, documents, options = {}) {
     const { topK = 3, threshold = 0 } = options;

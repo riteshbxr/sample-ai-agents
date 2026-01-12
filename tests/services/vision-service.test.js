@@ -176,3 +176,138 @@ test('VisionService - analyzeImage throws error for unsupported provider', async
     }
   );
 });
+
+test('VisionService - extractText with OCR', async () => {
+  const service = new VisionService('mock');
+
+  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+    // Verify OCR prompt is used
+    assert.ok(prompt.includes('Extract all text'));
+    assert.ok(prompt.includes('Return only the text content'));
+    return 'Extracted text: Hello World';
+  };
+
+  const testImageBase64 = service.createTestImageBase64();
+  const result = await service.extractText(testImageBase64);
+
+  assert.ok(typeof result === 'string');
+  assert.ok(result.includes('Extracted text'));
+});
+
+test('VisionService - extractText with options', async () => {
+  const service = new VisionService('mock');
+
+  let capturedOptions = null;
+  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+    capturedOptions = options;
+    return 'Text content';
+  };
+
+  const testImageBase64 = service.createTestImageBase64();
+  await service.extractText(testImageBase64, { temperature: 0.3, max_tokens: 200 });
+
+  assert.ok(capturedOptions);
+  assert.strictEqual(capturedOptions.temperature, 0.3);
+  assert.strictEqual(capturedOptions.max_tokens, 200);
+});
+
+test('VisionService - extractText with file path', async () => {
+  const service = new VisionService('mock');
+
+  service.client.analyzeImage = async (imageBase64, prompt) => {
+    return 'Text from file image';
+  };
+
+  // Create a temporary test file
+  const testImagePath = path.join(__dirname, 'test-ocr-image.txt');
+  fs.writeFileSync(testImagePath, 'test image content');
+
+  const result = await service.extractText(testImagePath);
+
+  assert.ok(typeof result === 'string');
+  assert.strictEqual(result, 'Text from file image');
+
+  // Cleanup
+  fs.unlinkSync(testImagePath);
+});
+
+test('VisionService - answerQuestions with single question', async () => {
+  const service = new VisionService('mock');
+
+  service.client.analyzeImage = async (imageBase64, prompt) => {
+    return `Answer to: ${prompt}`;
+  };
+
+  const testImageBase64 = service.createTestImageBase64();
+  const result = await service.answerQuestions(testImageBase64, 'What is in this image?');
+
+  assert.ok(typeof result === 'string');
+  assert.ok(result.includes('What is in this image?'));
+});
+
+test('VisionService - answerQuestions with multiple questions', async () => {
+  const service = new VisionService('mock');
+
+  let callCount = 0;
+  service.client.analyzeImage = async (imageBase64, prompt) => {
+    callCount++;
+    return `Answer ${callCount} to: ${prompt}`;
+  };
+
+  const testImageBase64 = service.createTestImageBase64();
+  const questions = ['What is in this image?', 'What colors are present?', 'Describe the scene'];
+
+  const result = await service.answerQuestions(testImageBase64, questions);
+
+  assert.ok(typeof result === 'object');
+  assert.strictEqual(callCount, 3);
+  assert.ok(result['What is in this image?']);
+  assert.ok(result['What colors are present?']);
+  assert.ok(result['Describe the scene']);
+  assert.strictEqual(Object.keys(result).length, 3);
+});
+
+test('VisionService - answerQuestions with multiple questions and options', async () => {
+  const service = new VisionService('mock');
+
+  let capturedOptions = null;
+  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+    capturedOptions = options;
+    return 'Answer';
+  };
+
+  const testImageBase64 = service.createTestImageBase64();
+  const questions = ['Question 1', 'Question 2'];
+
+  await service.answerQuestions(testImageBase64, questions, {
+    temperature: 0.5,
+    max_tokens: 300,
+  });
+
+  assert.ok(capturedOptions);
+  assert.strictEqual(capturedOptions.temperature, 0.5);
+  assert.strictEqual(capturedOptions.max_tokens, 300);
+});
+
+test('VisionService - answerQuestions preserves question order', async () => {
+  const service = new VisionService('mock');
+
+  const callOrder = [];
+  service.client.analyzeImage = async (imageBase64, prompt) => {
+    callOrder.push(prompt);
+    return `Answer to ${prompt}`;
+  };
+
+  const testImageBase64 = service.createTestImageBase64();
+  const questions = ['First question', 'Second question', 'Third question'];
+
+  const result = await service.answerQuestions(testImageBase64, questions);
+
+  assert.strictEqual(callOrder.length, 3);
+  assert.strictEqual(callOrder[0], 'First question');
+  assert.strictEqual(callOrder[1], 'Second question');
+  assert.strictEqual(callOrder[2], 'Third question');
+  assert.ok(result['First question']);
+  assert.ok(result['Second question']);
+  assert.ok(result['Third question']);
+});
