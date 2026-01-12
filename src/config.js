@@ -54,6 +54,123 @@ export const config = {
   },
 };
 
+/**
+ * Provider Detection Utilities
+ * Centralized logic for determining the default AI provider
+ */
+export const providerUtils = {
+  /**
+   * Get the default provider with smart routing
+   * Returns 'openai' which routes to Azure or Standard based on config
+   * @returns {string} Provider name ('openai', 'claude')
+   * @throws {Error} If no provider is configured (unless in test mode)
+   */
+  getDefaultProvider() {
+    // Allow test keys or test environment to bypass validation
+    const isTestEnv =
+      process.env.NODE_ENV === 'test' ||
+      process.env.NODE_TEST_CONTEXT !== undefined ||
+      (typeof process.env.npm_lifecycle_script === 'string' &&
+        process.env.npm_lifecycle_script.includes('test'));
+
+    if (config.openai.azureApiKey || config.openai.standardApiKey) {
+      return 'openai'; // Smart routing based on config.openai.defaultProvider
+    }
+    if (config.claude.apiKey) {
+      return 'claude';
+    }
+
+    // In test mode, return a default provider
+    if (isTestEnv) {
+      return 'mock';
+    }
+
+    throw new Error('No AI provider configured. Please set API keys in .env file');
+  },
+
+  /**
+   * Get the default provider for vision tasks
+   * Vision tasks require specific models, so we explicitly use standard OpenAI or Claude
+   * @returns {string} Provider name ('openai-standard', 'claude')
+   * @throws {Error} If no provider is configured (unless in test mode)
+   */
+  getDefaultVisionProvider() {
+    // Allow test keys or test environment to bypass validation
+    const isTestEnv =
+      process.env.NODE_ENV === 'test' ||
+      process.env.NODE_TEST_CONTEXT !== undefined ||
+      (typeof process.env.npm_lifecycle_script === 'string' &&
+        process.env.npm_lifecycle_script.includes('test'));
+
+    if (config.openai.azureApiKey || config.openai.standardApiKey) {
+      return 'openai-standard'; // Vision works best with standard OpenAI
+    }
+    if (config.claude.apiKey) {
+      return 'claude';
+    }
+
+    // In test mode, return a default provider
+    if (isTestEnv) {
+      return 'mock';
+    }
+
+    throw new Error('No AI provider configured for vision tasks');
+  },
+
+  /**
+   * Get the default provider for assistants API
+   * Assistants API only works with standard OpenAI (not Azure)
+   * @returns {string} Provider name ('openai-standard')
+   * @throws {Error} If OpenAI standard API key is not configured (unless in test mode)
+   */
+  getDefaultAssistantsProvider() {
+    // Allow test keys or test environment to bypass validation
+    const isTestEnv =
+      process.env.NODE_ENV === 'test' ||
+      process.env.NODE_TEST_CONTEXT !== undefined ||
+      (typeof process.env.npm_lifecycle_script === 'string' &&
+        process.env.npm_lifecycle_script.includes('test'));
+
+    if (!config.openai.standardApiKey && !isTestEnv) {
+      throw new Error('OpenAI standard API key required for Assistants API');
+    }
+
+    // In test mode without a key, still return the provider
+    // The client will be replaced with a mock in tests
+    if (isTestEnv && !config.openai.standardApiKey) {
+      return 'mock';
+    }
+
+    return 'openai-standard';
+  },
+
+  /**
+   * Check if a specific provider is available
+   * @param {string} provider - Provider name
+   * @returns {boolean} True if provider is configured
+   */
+  isProviderAvailable(provider) {
+    switch (provider) {
+      case 'openai':
+      case 'openai-standard':
+        return !!config.openai.standardApiKey;
+      case 'azure-openai':
+        return !!config.openai.azureApiKey;
+      case 'claude':
+        return !!config.claude.apiKey;
+      case 'mock':
+        return (
+          process.env.NODE_ENV === 'test' ||
+          process.env.NODE_TEST_CONTEXT !== undefined ||
+          (typeof process.env.npm_lifecycle_script === 'string' &&
+            process.env.npm_lifecycle_script.includes('test'))
+        );
+      default:
+        return false;
+    }
+  },
+};
+
 // Validate required API keys
 if (!config.openai.azureApiKey && !config.openai.standardApiKey && !config.claude.apiKey) {
   console.warn(

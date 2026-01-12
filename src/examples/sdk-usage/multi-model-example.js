@@ -1,5 +1,4 @@
-import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { ModelComparisonService } from '../../services/model-comparison-service.js';
 
 /**
  * Multi-Model Example
@@ -14,39 +13,30 @@ async function multiModelExample() {
   console.log(`Question: ${question}\n`);
   console.log('='.repeat(60) + '\n');
 
-  // OpenAI/Azure OpenAI Response
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
-    const openaiClient = createAIClient('openai');
-    console.log(`🤖 OpenAI ${openaiClient.model || config.openai.model}:`);
-    console.log('-'.repeat(60));
-    const openaiMessages = [
-      {
-        role: 'user',
-        content: question,
-      },
-    ];
+  const comparisonService = new ModelComparisonService();
+  const responses = await comparisonService.compareQuery(question);
 
-    const openaiResponse = await openaiClient.chat(openaiMessages);
-    console.log(openaiClient.getTextContent(openaiResponse));
-    console.log('\n');
+  // Display responses
+  if (responses.openai) {
+    if (responses.openai.error) {
+      console.log(`🤖 OpenAI: Error - ${responses.openai.error}\n`);
+    } else {
+      console.log(`🤖 OpenAI ${responses.openai.model}:`);
+      console.log('-'.repeat(60));
+      console.log(responses.openai.content);
+      console.log('\n');
+    }
   }
 
-  // Claude Response
-  if (config.claude.apiKey) {
-    const claudeClient = createAIClient('claude');
-    console.log(`🤖 Claude ${claudeClient.model || config.claude.model}:`);
-    console.log('-'.repeat(60));
-    const claudeMessages = [
-      {
-        role: 'user',
-        content: question,
-      },
-    ];
-
-    const claudeResponse = await claudeClient.chat(claudeMessages);
-    const claudeText = claudeClient.getTextContent(claudeResponse);
-    console.log(claudeText);
-    console.log('\n');
+  if (responses.claude) {
+    if (responses.claude.error) {
+      console.log(`🤖 Claude: Error - ${responses.claude.error}\n`);
+    } else {
+      console.log(`🤖 Claude ${responses.claude.model}:`);
+      console.log('-'.repeat(60));
+      console.log(responses.claude.content);
+      console.log('\n');
+    }
   }
 
   console.log('='.repeat(60));

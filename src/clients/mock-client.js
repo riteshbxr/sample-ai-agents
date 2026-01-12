@@ -16,6 +16,7 @@ export class MockAIClient extends AIClientInterface {
    * @param {Function} [config.chatStreamHandler] - Custom handler for chatStream() calls
    * @param {Function} [config.chatWithToolsHandler] - Custom handler for chatWithTools() calls
    * @param {Function} [config.getEmbeddingsHandler] - Custom handler for getEmbeddings() calls
+   * @param {Function} [config.analyzeImageHandler] - Custom handler for analyzeImage() calls
    * @param {boolean} [config.simulateErrors=false] - Whether to simulate errors
    * @param {string} [config.responseFormat='openai'] - Response format: 'openai' or 'claude'
    */
@@ -27,6 +28,7 @@ export class MockAIClient extends AIClientInterface {
     this.chatStreamHandler = config.chatStreamHandler;
     this.chatWithToolsHandler = config.chatWithToolsHandler;
     this.getEmbeddingsHandler = config.getEmbeddingsHandler;
+    this.analyzeImageHandler = config.analyzeImageHandler;
     this.simulateErrors = config.simulateErrors || false;
     this.responseFormat = config.responseFormat || 'openai';
     this.callHistory = []; // Track all method calls for testing
@@ -147,6 +149,34 @@ export class MockAIClient extends AIClientInterface {
       const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
       return vector.map((val) => val / magnitude);
     });
+  }
+
+  /**
+   * Analyze an image with a text prompt
+   * @param {string} imageBase64 - Base64 encoded image
+   * @param {string} prompt - Text prompt for analysis
+   * @param {Object} options - Additional options
+   * @returns {Promise<string>} Analysis result
+   */
+  async analyzeImage(imageBase64, prompt, options = {}) {
+    this.callHistory.push({
+      method: 'analyzeImage',
+      imageBase64,
+      prompt,
+      options,
+      timestamp: Date.now(),
+    });
+
+    if (this.simulateErrors) {
+      throw new Error('Mock error: Simulated vision error');
+    }
+
+    if (this.analyzeImageHandler) {
+      return await this.analyzeImageHandler(imageBase64, prompt, options);
+    }
+
+    // Default mock response
+    return 'This is a test image analysis result';
   }
 
   /**
@@ -360,6 +390,7 @@ export class MockAIClient extends AIClientInterface {
     this.chatStreamHandler = null;
     this.chatWithToolsHandler = null;
     this.getEmbeddingsHandler = null;
+    this.analyzeImageHandler = null;
     this.defaultResponse = 'Mock response';
   }
 }

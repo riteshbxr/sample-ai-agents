@@ -1,4 +1,4 @@
-import { createAIClient } from '../../clients/client-factory.js';
+import { ChatService } from '../../services/chat-service.js';
 import { config } from '../../config.js';
 
 /**
@@ -12,7 +12,7 @@ async function streamingExample() {
     console.log('OpenAI Streaming Response:');
     console.log('---');
 
-    const openaiClient = createAIClient('openai');
+    const chatService = new ChatService('openai');
     const messages = [
       {
         role: 'user',
@@ -20,7 +20,7 @@ async function streamingExample() {
       },
     ];
 
-    await openaiClient.chatStream(messages, (chunk) => {
+    await chatService.chatStream(messages, (chunk) => {
       process.stdout.write(chunk);
     });
 
@@ -32,7 +32,7 @@ async function streamingExample() {
     console.log('Claude Streaming Response:');
     console.log('---');
 
-    const claudeClient = createAIClient('claude');
+    const chatService = new ChatService('claude');
     const messages = [
       {
         role: 'user',
@@ -40,7 +40,7 @@ async function streamingExample() {
       },
     ];
 
-    await claudeClient.chatStream(messages, (chunk) => {
+    await chatService.chatStream(messages, (chunk) => {
       process.stdout.write(chunk);
     });
 

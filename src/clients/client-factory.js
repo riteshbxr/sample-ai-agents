@@ -8,9 +8,11 @@
 import { AzureOpenAIClient } from './openai-client.js';
 import { StandardOpenAIClient } from './standard-openai-client.js';
 import { ClaudeClient } from './claude-client.js';
+import { MockAIClient } from './mock-client.js';
+
 import { config } from '../config.js';
 /**
- * @typedef {'openai'|'openai-standard'|'azure-openai'|'claude'} Provider - AI provider name
+ * @typedef {'openai'|'openai-standard'|'azure-openai'|'claude'|'mock'} Provider - AI provider name
  */
 
 /**
@@ -41,6 +43,8 @@ export function createAIClient(provider = 'azure-openai', model = null) {
       : new StandardOpenAIClient(model);
   } else if (provider === 'claude') {
     return new ClaudeClient(model);
+  } else if (provider === 'mock') {
+    return new MockAIClient(model ? { model } : {});
   } else {
     throw new Error(
       `Unsupported provider: ${provider}. Use 'openai', 'openai-standard', 'azure-openai', or 'claude'`

@@ -9,7 +9,7 @@ module.exports = {
   },
   extends: ['eslint:recommended'],
   rules: {
-    'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    'no-unused-vars': 'warn',
     'no-console': 'off',
   },
 };

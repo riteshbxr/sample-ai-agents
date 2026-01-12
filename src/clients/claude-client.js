@@ -164,4 +164,40 @@ export class ClaudeClient extends AIClientInterface {
       'Claude does not support embeddings. Please use OpenAI for embeddings or a third-party embeddings service.'
     );
   }
+
+  /**
+   * Analyze an image with a text prompt
+   * @param {string} imageBase64 - Base64 encoded image
+   * @param {string} prompt - Text prompt for analysis
+   * @param {Object} options - Additional options (max_tokens, etc.)
+   * @returns {Promise<string>} Analysis result
+   */
+  async analyzeImage(imageBase64, prompt, options = {}) {
+    const response = await this.client.messages.create({
+      model: this.model,
+      max_tokens: options.max_tokens || 1024,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: 'image/png',
+                data: imageBase64,
+              },
+            },
+            {
+              type: 'text',
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      ...options,
+    });
+
+    return this.getTextContent(response);
+  }
 }

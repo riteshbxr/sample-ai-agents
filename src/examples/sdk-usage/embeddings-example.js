@@ -1,5 +1,4 @@
-import { createAIClient } from '../../clients/client-factory.js';
-import { cosineSimilarity } from '../../utils/similarity-utils.js';
+import { EmbeddingsService } from '../../services/embeddings-service.js';
 import { config } from '../../config.js';
 
 /**
@@ -14,7 +13,7 @@ async function embeddingsExample() {
     return;
   }
 
-  const openaiClient = createAIClient('openai');
+  const embeddingsService = new EmbeddingsService('openai');
 
   // Example 1: Semantic Similarity Search
   console.log('1️⃣ Semantic Similarity Search:');
@@ -30,7 +29,7 @@ async function embeddingsExample() {
   ];
 
   console.log('Generating embeddings for documents...\n');
-  const documentEmbeddings = await openaiClient.getEmbeddings(documents);
+  const documentEmbeddings = await embeddingsService.getEmbeddings(documents);
   console.log(`✅ Generated ${documentEmbeddings.length} embeddings`);
   console.log(`   Embedding dimension: ${documentEmbeddings[0].length}\n`);
 
@@ -38,21 +37,12 @@ async function embeddingsExample() {
   const query = 'What is artificial intelligence?';
   console.log(`Query: "${query}"\n`);
 
-  const [queryEmbedding] = await openaiClient.getEmbeddings([query]);
-
-  // Using cosineSimilarity from utils
-
-  // Find most similar documents
-  const similarities = documents.map((doc, idx) => ({
-    document: doc,
-    similarity: cosineSimilarity(queryEmbedding, documentEmbeddings[idx]),
-    index: idx,
-  }));
-
-  similarities.sort((a, b) => b.similarity - a.similarity);
+  const similarDocs = await embeddingsService.findSimilarDocuments(query, documents, {
+    topK: 3,
+  });
 
   console.log('Most similar documents:');
-  similarities.slice(0, 3).forEach((item, idx) => {
+  similarDocs.forEach((item, idx) => {
     console.log(`\n${idx + 1}. Similarity: ${item.similarity.toFixed(4)}`);
     console.log(`   "${item.document}"`);
   });
@@ -75,63 +65,7 @@ async function embeddingsExample() {
   ];
 
   console.log('Clustering documents by topic...\n');
-  const techEmbeddings = await openaiClient.getEmbeddings(techDocs);
-
-  // Simple K-means clustering (K=3)
-  function kMeansClustering(embeddings, k = 3, maxIterations = 10) {
-    const n = embeddings.length;
-    const dim = embeddings[0].length;
-
-    // Initialize centroids randomly
-    let centroids = [];
-    for (let i = 0; i < k; i++) {
-      const randomIdx = Math.floor(Math.random() * n);
-      centroids.push([...embeddings[randomIdx]]);
-    }
-
-    let clusters = new Array(n).fill(0);
-
-    for (let iter = 0; iter < maxIterations; iter++) {
-      // Assign points to nearest centroid
-      for (let i = 0; i < n; i++) {
-        let minDist = Infinity;
-        let closestCentroid = 0;
-
-        for (let j = 0; j < k; j++) {
-          const dist = cosineSimilarity(embeddings[i], centroids[j]);
-          if (dist > minDist) {
-            minDist = dist;
-            closestCentroid = j;
-          }
-        }
-        clusters[i] = closestCentroid;
-      }
-
-      // Update centroids
-      for (let j = 0; j < k; j++) {
-        const clusterPoints = embeddings.filter((_, idx) => clusters[idx] === j);
-        if (clusterPoints.length > 0) {
-          centroids[j] = new Array(dim).fill(0).map((_, d) => {
-            return clusterPoints.reduce((sum, point) => sum + point[d], 0) / clusterPoints.length;
-          });
-        }
-      }
-    }
-
-    return clusters;
-  }
-
-  const clusters = kMeansClustering(techEmbeddings, 3);
-
-  // Group documents by cluster
-  const clusterGroups = {};
-  techDocs.forEach((doc, idx) => {
-    const cluster = clusters[idx];
-    if (!clusterGroups[cluster]) {
-      clusterGroups[cluster] = [];
-    }
-    clusterGroups[cluster].push(doc);
-  });
+  const clusterGroups = await embeddingsService.clusterDocuments(techDocs, 3);
 
   console.log('Clusters found:');
   Object.entries(clusterGroups).forEach(([clusterId, docs]) => {
@@ -166,11 +100,6 @@ async function embeddingsExample() {
 
   console.log('Generating embeddings for training examples...\n');
 
-  const trainingEmbeddings = {};
-  for (const [category, examples] of Object.entries(trainingExamples)) {
-    trainingEmbeddings[category] = await openaiClient.getEmbeddings(examples);
-  }
-
   // Test classification
   const testTexts = [
     'I need help accessing my account',
@@ -180,29 +109,12 @@ async function embeddingsExample() {
 
   console.log('Classifying test texts:\n');
 
-  for (const testText of testTexts) {
-    const [testEmbedding] = await openaiClient.getEmbeddings([testText]);
-
-    let bestCategory = null;
-    let bestSimilarity = -1;
-
-    for (const [category, embeddings] of Object.entries(trainingEmbeddings)) {
-      // Average similarity to all examples in category
-      const avgSimilarity =
-        embeddings.reduce((sum, emb) => {
-          return sum + cosineSimilarity(testEmbedding, emb);
-        }, 0) / embeddings.length;
-
-      if (avgSimilarity > bestSimilarity) {
-        bestSimilarity = avgSimilarity;
-        bestCategory = category;
-      }
-    }
-
-    console.log(`Text: "${testText}"`);
-    console.log(`Classification: ${bestCategory} (confidence: ${bestSimilarity.toFixed(4)})`);
+  const classifications = await embeddingsService.classifyText(testTexts, trainingExamples);
+  classifications.forEach((result) => {
+    console.log(`Text: "${result.text}"`);
+    console.log(`Classification: ${result.category} (confidence: ${result.confidence.toFixed(4)})`);
     console.log('');
-  }
+  });
 
   console.log('\n');
 
@@ -218,25 +130,9 @@ async function embeddingsExample() {
     'JavaScript is a scripting language',
   ];
 
-  const similarEmbeddings = await openaiClient.getEmbeddings(similarTexts);
-
   console.log('Finding similar/duplicate content:\n');
 
-  const threshold = 0.95; // Similarity threshold for duplicates
-  const duplicates = [];
-
-  for (let i = 0; i < similarTexts.length; i++) {
-    for (let j = i + 1; j < similarTexts.length; j++) {
-      const similarity = cosineSimilarity(similarEmbeddings[i], similarEmbeddings[j]);
-      if (similarity >= threshold) {
-        duplicates.push({
-          text1: similarTexts[i],
-          text2: similarTexts[j],
-          similarity,
-        });
-      }
-    }
-  }
+  const duplicates = await embeddingsService.findDuplicates(similarTexts, 0.95);
 
   if (duplicates.length > 0) {
     console.log(`Found ${duplicates.length} potential duplicate(s):\n`);

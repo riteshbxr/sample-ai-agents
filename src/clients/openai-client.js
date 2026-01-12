@@ -308,4 +308,41 @@ export class AzureOpenAIClient extends AIClientInterface {
     }
     return [];
   }
+
+  /**
+   * Analyze an image with a text prompt
+   * @param {string} imageBase64 - Base64 encoded image
+   * @param {string} prompt - Text prompt for analysis
+   * @param {Object} options - Additional options (model, max_tokens, etc.)
+   * @returns {Promise<string>} Analysis result
+   */
+  async analyzeImage(imageBase64, prompt, options = {}) {
+    const messages = [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: prompt,
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:image/png;base64,${imageBase64}`,
+            },
+          },
+        ],
+      },
+    ];
+
+    const model = options.model || config.openai.visionModel || 'gpt-4o';
+    const response = await this.client.chat.completions.create({
+      model,
+      messages,
+      max_tokens: options.max_tokens || 300,
+      ...options,
+    });
+
+    return response.choices[0].message.content;
+  }
 }
