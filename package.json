@@ -16,7 +16,6 @@
     "demo:claude-assistants": "node src/examples/sdk-usage/claude-assistants-example.js",
     "demo:embeddings": "node src/examples/sdk-usage/embeddings-example.js",
     "demo:vision": "node src/examples/sdk-usage/vision-example.js",
-    "demo:unified-client": "node src/examples/sdk-usage/unified-client-example.js",
     "demo:agent": "node src/examples/strategies/agent-example.js",
     "demo:rag": "node src/examples/strategies/rag-example.js",
     "demo:multi-agent": "node src/examples/strategies/multi-agent/multi-agent-example.js",

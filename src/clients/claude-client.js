@@ -22,17 +22,71 @@ export class ClaudeClient extends AIClientInterface {
   }
 
   /**
+   * Extract system messages from messages array and convert to Claude format
+   * Claude API requires system content as a top-level parameter, not as a message role
+   * @param {Array} messages - Array of message objects
+   * @returns {Object} Object with filteredMessages (without system) and systemContent (combined system messages)
+   */
+  extractSystemMessages(messages) {
+    const systemMessages = [];
+    const filteredMessages = [];
+
+    for (const message of messages) {
+      if (message.role === 'system') {
+        // Extract content from system message
+        // Handle both string content and structured content
+        let content = '';
+        if (typeof message.content === 'string') {
+          content = message.content;
+        } else if (Array.isArray(message.content)) {
+          // Handle array of content blocks (e.g., text blocks)
+          content = message.content
+            .filter((block) => block.type === 'text')
+            .map((block) => block.text)
+            .join('\n');
+        } else if (message.content?.text) {
+          content = message.content.text;
+        }
+        if (content) {
+          systemMessages.push(content);
+        }
+      } else {
+        filteredMessages.push(message);
+      }
+    }
+
+    // Combine multiple system messages with newlines
+    const systemContent = systemMessages.length > 0 ? systemMessages.join('\n\n') : null;
+
+    return {
+      filteredMessages,
+      systemContent,
+    };
+  }
+
+  /**
    * Basic chat completion
    * @param {Array} messages - Array of message objects with role and content
    * @param {Object} options - Additional options (temperature, max_tokens, etc.)
    * @returns {Promise<Object>} Message response
    */
   async chat(messages, options = {}) {
+    // Extract system messages and convert to top-level system parameter
+    // Claude API doesn't accept "system" as a message role
+    const { filteredMessages, systemContent } = this.extractSystemMessages(messages);
+
+    // Use system from options if provided, otherwise use extracted system content
+    const systemParam = options.system || systemContent;
+
+    // Claude doesn't support response_format parameter - remove it if present
+    const { response_format, ...claudeOptions } = options;
+
     const response = await this.client.messages.create({
       model: this.model,
       max_tokens: options.max_tokens || 4096,
-      messages,
-      ...options,
+      messages: filteredMessages,
+      ...(systemParam && { system: systemParam }),
+      ...claudeOptions,
     });
     return response;
   }
@@ -45,11 +99,22 @@ export class ClaudeClient extends AIClientInterface {
    * @returns {Promise<string>} Full response text
    */
   async chatStream(messages, onChunk = null, options = {}) {
+    // Extract system messages and convert to top-level system parameter
+    // Claude API doesn't accept "system" as a message role
+    const { filteredMessages, systemContent } = this.extractSystemMessages(messages);
+
+    // Use system from options if provided, otherwise use extracted system content
+    const systemParam = options.system || systemContent;
+
+    // Claude doesn't support response_format parameter - remove it if present
+    const { response_format, ...claudeOptions } = options;
+
     const stream = await this.client.messages.stream({
       model: this.model,
       max_tokens: options.max_tokens || 4096,
-      messages,
-      ...options,
+      messages: filteredMessages,
+      ...(systemParam && { system: systemParam }),
+      ...claudeOptions,
     });
 
     let fullText = '';
@@ -75,6 +140,10 @@ export class ClaudeClient extends AIClientInterface {
    * @returns {Promise<Object>} Response with tool use
    */
   async chatWithTools(messages, tools, options = {}) {
+    // Extract system messages and convert to top-level system parameter
+    // Claude API doesn't accept "system" as a message role
+    const { filteredMessages, systemContent } = this.extractSystemMessages(messages);
+
     // Convert OpenAI function format to Claude tool format if needed
     const claudeTools = tools.map((tool) => {
       // If already in Claude format, use as-is
@@ -101,12 +170,19 @@ export class ClaudeClient extends AIClientInterface {
       return tool;
     });
 
+    // Use system from options if provided, otherwise use extracted system content
+    const systemParam = options.system || systemContent;
+
+    // Claude doesn't support response_format parameter - remove it if present
+    const { response_format, ...claudeOptions } = options;
+
     const response = await this.client.messages.create({
       model: this.model,
       max_tokens: options.max_tokens || 4096,
-      messages,
+      messages: filteredMessages,
       tools: claudeTools,
-      ...options,
+      ...(systemParam && { system: systemParam }),
+      ...claudeOptions,
     });
 
     return response;

@@ -1,5 +1,5 @@
 import { ChatService } from '../../services/chat-service.js';
-import { config } from '../../config.js';
+import { providerUtils, defaultOptions } from '../../config.js';
 
 /**
  * Structured Output Example
@@ -20,7 +20,7 @@ async function structuredOutputExample() {
   console.log('\n');
 
   // OpenAI with JSON mode
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     console.log('🤖 OpenAI - Structured JSON Output:');
     console.log('-'.repeat(60));
 
@@ -47,7 +47,7 @@ async function structuredOutputExample() {
   }
 
   // Claude with structured output
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     console.log('🤖 Claude - Structured JSON Output:');
     console.log('-'.repeat(60));
 
@@ -77,7 +77,7 @@ async function structuredOutputExample() {
   console.log('📊 Generating Structured Product Data:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const chatService = new ChatService('openai');
     const productPrompt = `Generate a product catalog with 3 products. Each product should have:
     - name (string)
@@ -92,9 +92,7 @@ async function structuredOutputExample() {
     try {
       const catalog = await chatService.getStructuredOutput(
         [{ role: 'user', content: productPrompt }],
-        {
-          temperature: 0.7,
-        }
+        defaultOptions.getDefaultOptions()
       );
       console.log(JSON.stringify(catalog, null, 2));
     } catch (error) {

@@ -1,7 +1,7 @@
 import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai';
 import { StateGraph, END, START, Annotation } from '@langchain/langgraph';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
-import { config } from '../../config.js';
+import { config, providerUtils } from '../../config.js';
 
 /**
  * LangGraph Example
@@ -105,7 +105,7 @@ async function analysisNode(state) {
 async function llmNode(state) {
   console.log('  🤖 [LLM Node] Processing with LLM...');
 
-  const apiKey = config.openai.azureApiKey || config.openai.standardApiKey;
+  const apiKey = providerUtils.isProviderAvailable('openai');
   if (!apiKey) {
     throw new Error('AZURE_OPENAI_API_KEY or OPENAI_API_KEY is required for LangGraph LLM node');
   }
@@ -120,7 +120,7 @@ async function llmNode(state) {
 
     // Azure OpenAI configuration
     const endpoint = config.openai.azure.endpoint.replace(/\/$/, '');
-    const deployment = config.openai.azure.deployment || config.openai.model;
+    const deployment = config.openai.azure.deployment || providerUtils.getDefaultModel('openai');
 
     // Extract resource name from endpoint (e.g., https://resource.openai.azure.com -> resource)
     const endpointMatch = endpoint.match(/https?:\/\/([^.]+)\./);
@@ -153,7 +153,7 @@ async function llmNode(state) {
   } else {
     // Standard OpenAI configuration
     llm = new ChatOpenAI({
-      model: config.openai.model,
+      model: providerUtils.getDefaultModel('openai'),
       temperature: 0.7,
       apiKey: apiKey,
     });
@@ -403,7 +403,7 @@ async function streamingWorkflowExample() {
   console.log('\n\n4️⃣ Streaming Workflow');
   console.log('='.repeat(60));
 
-  if (!config.openai.azureApiKey && !config.openai.standardApiKey) {
+  if (!providerUtils.isProviderAvailable('openai')) {
     console.log('⚠️  Skipping streaming example - AZURE_OPENAI_API_KEY or OPENAI_API_KEY not set');
     return;
   }

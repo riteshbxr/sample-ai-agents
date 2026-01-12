@@ -1,5 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Error Handling & Retry Pattern Example
@@ -141,7 +141,7 @@ async function errorHandlingExample() {
   console.log('1️⃣ Retry with Exponential Backoff:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const resilientClient = new ResilientAIClient(openaiClient, 3, 1000);
 
@@ -149,7 +149,7 @@ async function errorHandlingExample() {
       const response = await resilientClient.chat([
         { role: 'user', content: 'Hello, this is a test message.' },
       ]);
-      console.log('✅ Success:', response.choices[0].message.content.substring(0, 100));
+      console.log('✅ Success:', openaiClient.getTextContent(response).substring(0, 100));
     } catch (error) {
       console.error('❌ Final error:', error.message);
     }
@@ -165,7 +165,7 @@ async function errorHandlingExample() {
 
   async function makeRequest() {
     return circuitBreaker.execute(async () => {
-      if (config.openai.azureApiKey || config.openai.standardApiKey) {
+      if (providerUtils.isProviderAvailable('openai')) {
         const openaiClient = createAIClient('azure-openai');
         return await openaiClient.chat([{ role: 'user', content: 'Test message' }]);
       }
@@ -224,10 +224,10 @@ async function errorHandlingExample() {
   async function chatWithFallback(messages) {
     const providers = [];
 
-    if (config.openai.azureApiKey || config.openai.standardApiKey) {
+    if (providerUtils.isProviderAvailable('openai')) {
       providers.push('openai');
     }
-    if (config.claude.apiKey) {
+    if (providerUtils.isProviderAvailable('claude')) {
       providers.push('claude');
     }
 
@@ -237,7 +237,7 @@ async function errorHandlingExample() {
         if (provider === 'openai') {
           client = createAIClient('azure-openai');
           const response = await client.chat(messages);
-          return response.choices[0].message.content;
+          return client.getTextContent(response);
         } else if (provider === 'claude') {
           client = createAIClient('claude');
           const response = await client.chat(messages);

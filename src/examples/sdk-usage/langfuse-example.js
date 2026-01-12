@@ -1,6 +1,6 @@
 import { Langfuse } from 'langfuse';
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { config, providerUtils, defaultOptions } from '../../config.js';
 
 /**
  * Langfuse Example
@@ -95,8 +95,7 @@ async function basicTracingExample() {
   });
 
   try {
-    const provider =
-      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+    const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     console.log(`\n📥 User Query: "What is RAG?"`);
@@ -104,9 +103,9 @@ async function basicTracingExample() {
     // Create a generation span
     const generation = trace.generation({
       name: 'chat-completion',
-      model: provider === 'openai' ? config.openai.model : config.claude.model,
+      model: providerUtils.getDefaultModel(provider),
       modelParameters: {
-        temperature: 0.7,
+        temperature: defaultOptions.getDefaultOptions().temperature,
       },
     });
 
@@ -118,8 +117,7 @@ async function basicTracingExample() {
 
     const duration = Date.now() - startTime;
 
-    const responseText =
-      provider === 'openai' ? response.choices[0].message.content : client.getTextContent(response);
+    const responseText = client.getTextContent(response);
 
     // End generation with output
     await generation.end({
@@ -194,8 +192,7 @@ async function multiStepTracingExample() {
   });
 
   try {
-    const provider =
-      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+    const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     // Step 1: Research
@@ -283,8 +280,7 @@ async function scoringExample() {
   });
 
   try {
-    const provider =
-      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+    const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     const prompt = 'Explain quantum computing in simple terms.';
@@ -295,8 +291,7 @@ async function scoringExample() {
     });
 
     const response = await client.chat([{ role: 'user', content: prompt }]);
-    const responseText =
-      provider === 'openai' ? response.choices[0].message.content : client.getTextContent(response);
+    const responseText = client.getTextContent(response);
 
     await generation.end({ output: responseText });
 
@@ -444,8 +439,7 @@ async function batchTracingExample() {
   });
 
   try {
-    const provider =
-      config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+    const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
     const client = createAIClient(provider);
 
     const queries = [
@@ -465,10 +459,7 @@ async function batchTracingExample() {
 
         try {
           const response = await client.chat([{ role: 'user', content: query }]);
-          const responseText =
-            provider === 'openai'
-              ? response.choices[0].message.content
-              : client.getTextContent(response);
+          const responseText = client.getTextContent(response);
 
           await itemSpan.end({
             output: responseText.substring(0, 100),

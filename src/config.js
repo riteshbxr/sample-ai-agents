@@ -152,6 +152,7 @@ export const providerUtils = {
   isProviderAvailable(provider) {
     switch (provider) {
       case 'openai':
+        return !!config.openai.standardApiKey || !!config.openai.azureApiKey;
       case 'openai-standard':
         return !!config.openai.standardApiKey;
       case 'azure-openai':
@@ -168,6 +169,109 @@ export const providerUtils = {
       default:
         return false;
     }
+  },
+
+  /**
+   * Get the default model name for a provider
+   * @param {string} provider - Provider name ('openai', 'claude', etc.)
+   * @returns {string} Default model name for the provider
+   * @throws {Error} If provider is not supported
+   */
+  getDefaultModel(provider) {
+    switch (provider) {
+      case 'openai':
+      case 'openai-standard':
+      case 'azure-openai':
+        return config.openai.model;
+      case 'claude':
+        return config.claude.model;
+      case 'mock':
+        return 'mock-model';
+      default:
+        throw new Error(`Unsupported provider for model: ${provider}`);
+    }
+  },
+
+  /**
+   * Get the vision model name for a provider
+   * @param {string} provider - Provider name ('openai', 'claude', etc.)
+   * @returns {string} Vision model name for the provider
+   * @throws {Error} If provider is not supported or doesn't have a separate vision model
+   */
+  getVisionModel(provider) {
+    switch (provider) {
+      case 'openai':
+      case 'openai-standard':
+      case 'azure-openai':
+        return config.openai.visionModel;
+      case 'claude':
+        // Claude uses the same model for vision
+        return config.claude.model;
+      default:
+        throw new Error(`Unsupported provider for vision model: ${provider}`);
+    }
+  },
+};
+
+/**
+ * Default Options Utilities
+ * Provides standardized default options for AI requests
+ */
+export const defaultOptions = {
+  /**
+   * Get default options for AI requests
+   * @param {Object} overrides - Options to override defaults
+   * @returns {Object} Options object with defaults applied
+   */
+  getDefaultOptions(overrides = {}) {
+    return {
+      temperature: 0.7,
+      max_tokens: 4096,
+      ...overrides,
+    };
+  },
+
+  /**
+   * Get default options for specific use cases
+   * @param {string} useCase - Use case name ('creative', 'precise', 'structured', 'streaming')
+   * @param {Object} overrides - Options to override defaults
+   * @returns {Object} Options object with use-case-specific defaults
+   */
+  getUseCaseOptions(useCase = 'default', provider = null, overrides = {}) {
+    const useCaseDefaults = {
+      default: {
+        temperature: 0.7,
+        max_tokens: 4096,
+      },
+      creative: {
+        temperature: 0.9,
+        max_tokens: 2048,
+      },
+      precise: {
+        temperature: 0.3,
+        max_tokens: 4096,
+      },
+      structured: {
+        temperature: 0.3,
+        max_tokens: 4096,
+        response_format: provider !== 'claude' ? { type: 'json_object' } : undefined,
+      },
+      streaming: {
+        temperature: 0.7,
+        max_tokens: 4096,
+        stream: true,
+      },
+      vision: {
+        temperature: 0.7,
+        max_tokens: 1024,
+      },
+    };
+
+    const defaults = useCaseDefaults[useCase] || useCaseDefaults.default;
+    return {
+      ...defaults,
+      ...overrides,
+    };
   },
 };
 

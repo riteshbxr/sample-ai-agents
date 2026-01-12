@@ -1,5 +1,5 @@
 import { createAIClient } from '../clients/client-factory.js';
-import { providerUtils } from '../config.js';
+import { providerUtils, defaultOptions } from '../config.js';
 
 /**
  * Context Extraction Service
@@ -119,19 +119,18 @@ ${messages.map((msg, i) => `[${i}] ${msg.role}: ${this.getMessageContent(msg)}`)
 Return a JSON object with an "indices" array of message indices that are relevant to the goal. Example: {"indices": [0, 2, 5]}`;
 
     try {
+      // Use structured output defaults (temperature: 0.3, max_tokens: 4096)
+      const chatOptions = defaultOptions.getUseCaseOptions('structured', this.provider);
+
       const response = await this.client.chat(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        {
-          temperature: 0.3,
-          response_format: { type: 'json_object' },
-        }
+        chatOptions
       );
 
-      const content =
-        response.choices?.[0]?.message?.content || response.content?.[0]?.text || '{}';
+      const content = this.client.getTextContent(response) || '{}';
       const result = JSON.parse(content);
 
       // Extract indices (handle different response formats)
@@ -243,8 +242,7 @@ If there are no relevant chat messages, return "" (empty string).`;
 
     // Get extraction from LLM
     const response = await this.client.chat(messages);
-    const extractedContext =
-      response.choices?.[0]?.message?.content || response.content?.[0]?.text || '';
+    const extractedContext = this.client.getTextContent(response) || '';
 
     return extractedContext === '""' ? '' : extractedContext;
   }

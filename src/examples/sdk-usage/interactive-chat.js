@@ -4,7 +4,7 @@ import readline from 'readline';
 import { cosineSimilarity } from '../../utils/similarity-utils.js';
 import { estimateTokens } from '../../utils/token-utils.js';
 import { calculateCost } from '../../utils/cost-utils.js';
-import { config } from '../../config.js';
+import { providerUtils, defaultOptions } from '../../config.js';
 
 /**
  * Interactive Chat Example with Tool Support
@@ -114,10 +114,7 @@ class InteractiveChat {
                 content: text,
               },
             ],
-            {
-              response_format: { type: 'json_object' },
-              temperature: 0,
-            }
+            defaultOptions.getUseCaseOptions('structured', this.provider, { temperature: 0 })
           );
           const data = JSON.parse(this.client.getTextContent(response));
           return { data, success: true };
@@ -143,12 +140,12 @@ class InteractiveChat {
           const openaiClient = createAIClient('openai');
           const responses = {};
 
-          if (config.openai.azureApiKey || config.openai.standardApiKey) {
+          if (providerUtils.isProviderAvailable('openai')) {
             const openaiResp = await openaiClient.chat([{ role: 'user', content: query }]);
             responses.openai = openaiResp.choices[0].message.content.substring(0, 200);
           }
 
-          if (config.claude.apiKey) {
+          if (providerUtils.isProviderAvailable('claude')) {
             const claudeClient = createAIClient('claude');
             const claudeResp = await claudeClient.chat([{ role: 'user', content: query }]);
             responses.claude = claudeClient.getTextContent(claudeResp).substring(0, 200);
@@ -551,7 +548,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
 
     // Check API key availability
     if (this.provider === 'openai') {
-      if (!config.openai.azureApiKey && !config.openai.standardApiKey) {
+      if (!providerUtils.isProviderAvailable('openai')) {
         console.log(
           '\n⚠️  OpenAI API key not found. Please set AZURE_OPENAI_API_KEY or OPENAI_API_KEY in your .env file.'
         );
@@ -559,7 +556,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
         return;
       }
     } else {
-      if (!config.claude.apiKey) {
+      if (!providerUtils.isProviderAvailable('claude')) {
         console.log(
           '\n⚠️  Claude API key not found. Please set ANTHROPIC_API_KEY in your .env file.'
         );
@@ -626,7 +623,7 @@ async function interactiveChatExample() {
   // Determine which provider to use based on available API keys
   let provider = 'openai';
 
-  if (config.claude.apiKey && !config.openai.azureApiKey && !config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('claude') && !providerUtils.isProviderAvailable('openai')) {
     provider = 'claude';
   }
 

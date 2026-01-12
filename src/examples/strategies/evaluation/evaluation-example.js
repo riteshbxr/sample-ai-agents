@@ -1,5 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Evaluation & Testing Strategies Example
@@ -158,7 +158,7 @@ async function evaluationExample() {
   console.log('2️⃣ Consistency Testing:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const testQuery = 'What is machine learning?';
 
@@ -171,8 +171,10 @@ async function evaluationExample() {
       const response = await openaiClient.chat([{ role: 'user', content: testQuery }], {
         temperature: 0.7,
       });
-      responses.push(response.choices[0].message.content);
-      console.log(`Response ${i + 1}: ${response.choices[0].message.content.substring(0, 100)}...`);
+      responses.push(openaiClient.getTextContent(response));
+      console.log(
+        `Response ${i + 1}: ${openaiClient.getTextContent(response).substring(0, 100)}...`
+      );
     }
 
     // Compare consistency
@@ -193,7 +195,7 @@ async function evaluationExample() {
   console.log('3️⃣ A/B Testing Prompts:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
 
     const promptA = 'You are a helpful assistant.';
@@ -245,7 +247,7 @@ async function evaluationExample() {
       for (const test of this.tests) {
         try {
           const response = await this.client.chat(test.messages);
-          const content = response.choices[0].message.content;
+          const content = this.client.getTextContent(response);
           const evaluation = AIEvaluator.evaluateQuality(content, test.expectedCriteria);
 
           results.push({
@@ -267,7 +269,7 @@ async function evaluationExample() {
     }
   }
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const testSuite = new AITestSuite(openaiClient);
 
@@ -352,7 +354,7 @@ async function evaluationExample() {
     }
   }
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const monitor = new PerformanceMonitor();
 

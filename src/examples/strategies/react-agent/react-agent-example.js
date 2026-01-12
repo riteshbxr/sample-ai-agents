@@ -1,5 +1,5 @@
 import { createAIClient } from '../../../clients/client-factory.js';
-import { config } from '../../../config.js';
+import { providerUtils } from '../../../config.js';
 
 /**
  * ReAct Agent Example
@@ -249,13 +249,19 @@ IMPORTANT: You must respond with valid JSON format. Your response should be a JS
     ];
 
     // Get reasoning from LLM
-    const response = await this.client.chat(messages, {
+    const chatOptions = {
       temperature: 0.7,
-      response_format: { type: 'json_object' },
-    });
+    };
+
+    // Only add response_format for OpenAI providers (Claude doesn't support it)
+    if (this.provider !== 'claude') {
+      chatOptions.response_format = { type: 'json_object' };
+    }
+
+    const response = await this.client.chat(messages, chatOptions);
 
     try {
-      const reasoning = JSON.parse(response.choices[0].message.content);
+      const reasoning = JSON.parse(this.client.getTextContent(response));
       return {
         thought: reasoning.thought || reasoning.reasoning || 'Thinking...',
         toolToUse: reasoning.tool || null,
@@ -265,7 +271,7 @@ IMPORTANT: You must respond with valid JSON format. Your response should be a JS
       };
     } catch (error) {
       // Fallback if JSON parsing fails
-      const content = response.choices[0].message.content;
+      const content = this.client.getTextContent(response);
       return {
         thought: content,
         toolToUse: null,
@@ -359,7 +365,7 @@ async function reactAgentExample() {
   console.log('=== ReAct Agent Example ===');
   console.log('Reasoning + Acting pattern used in galactiq\n');
 
-  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+  const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const agent = new ReactAgent(provider);

@@ -1,5 +1,5 @@
 import { VisionService } from '../../services/vision-service.js';
-import { config } from '../../config.js';
+import { config, providerUtils } from '../../config.js';
 import fs from 'fs';
 
 /**
@@ -12,7 +12,7 @@ async function visionExample() {
   const visionService = new VisionService();
 
   // Example 1: Image description with OpenAI
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     console.log(`1️⃣ Image Description (OpenAI ${config.openai.visionModel}):`);
     console.log('-'.repeat(60));
 
@@ -47,9 +47,9 @@ async function visionExample() {
   console.log('\n');
 
   // Example 2: Image analysis with Claude
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     const claudeVisionService = new VisionService('claude');
-    console.log(`2️⃣ Image Analysis (Claude ${config.claude.model}):`);
+    console.log(`2️⃣ Image Analysis (Claude ${providerUtils.getDefaultModel('claude')}):`);
     console.log('-'.repeat(60));
 
     const testImage = claudeVisionService.createTestImageBase64();
@@ -76,7 +76,7 @@ async function visionExample() {
   console.log('3️⃣ Document OCR (Text Extraction):');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     // Example: Extract text from an image
     // OCR prompt would be used here with an actual image file
     console.log('OCR Prompt prepared. (Requires actual image file)');
@@ -89,7 +89,7 @@ async function visionExample() {
   console.log('4️⃣ Visual Question Answering:');
   console.log('-'.repeat(60));
 
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     const claudeVisionService = new VisionService('claude');
     const testImage = claudeVisionService.createTestImageBase64();
     const questions = [
@@ -117,7 +117,7 @@ async function visionExample() {
   console.log('5️⃣ Image Comparison:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     // Image comparison prompt would be used here with actual images
     console.log('Image comparison prompt prepared.');
     console.log('To use: Provide two image URLs or base64 encoded images');
@@ -129,7 +129,7 @@ async function visionExample() {
   console.log('6️⃣ Code Extraction from Screenshots:');
   console.log('-'.repeat(60));
 
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     // Code extraction prompt would be used here with an actual image
     console.log('Code extraction prompt prepared.');
     console.log('To use: Provide a screenshot of code');
@@ -137,13 +137,15 @@ async function visionExample() {
 
   console.log('\n💡 Vision API Usage Tips:');
   console.log('-'.repeat(60));
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     console.log(
       `1. For OpenAI: Using ${config.openai.visionModel} for vision (configured via OPENAI_VISION_MODEL)`
     );
   }
-  if (config.claude.apiKey) {
-    console.log(`2. For Claude: Using ${config.claude.model} (supports vision)`);
+  if (providerUtils.isProviderAvailable('claude')) {
+    console.log(
+      `2. For Claude: Using ${providerUtils.getDefaultModel('claude')} (supports vision)`
+    );
   }
   console.log('3. Images can be provided as URLs or base64 encoded');
   console.log('4. Keep image sizes reasonable (< 20MB recommended)');

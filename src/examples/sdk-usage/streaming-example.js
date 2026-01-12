@@ -1,5 +1,5 @@
 import { ChatService } from '../../services/chat-service.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Streaming example - Real-time token streaming for better UX
@@ -8,7 +8,7 @@ async function streamingExample() {
   console.log('=== Streaming Example ===\n');
 
   // OpenAI/Azure OpenAI Streaming
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     console.log('OpenAI Streaming Response:');
     console.log('---');
 
@@ -28,7 +28,7 @@ async function streamingExample() {
   }
 
   // Claude Streaming
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     console.log('Claude Streaming Response:');
     console.log('---');
 

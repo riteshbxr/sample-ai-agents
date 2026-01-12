@@ -1,7 +1,7 @@
 import { PromptService } from '../../services/prompt-service.js';
 import { ChatService } from '../../services/chat-service.js';
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { config, providerUtils } from '../../config.js';
 
 /**
  * Prompt Engineering Techniques Example
@@ -14,7 +14,7 @@ async function promptTechniquesExample() {
   console.log('1️⃣ Few-Shot Learning:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const promptService = new PromptService('openai');
 
     const examples = [
@@ -43,7 +43,7 @@ async function promptTechniquesExample() {
   console.log('2️⃣ Chain-of-Thought Prompting:');
   console.log('-'.repeat(60));
 
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     const promptService = new PromptService('claude');
 
     const problem = `A startup has 100 customers. 60% are on the basic plan ($10/month), 
@@ -65,7 +65,7 @@ What's the monthly recurring revenue (MRR)?`;
   console.log('3️⃣ Role-Playing:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const promptService = new PromptService('openai');
 
     const role = `a senior product manager at a tech startup with 10 years of experience.
@@ -88,7 +88,7 @@ Provide your expert advice:`;
   console.log('4️⃣ Output Formatting:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
 
     const formatPrompt = `Create a product roadmap for an AI agent platform. 
@@ -104,7 +104,7 @@ List 5 features.`;
       temperature: 0.7,
     });
 
-    console.log(response.choices[0].message.content);
+    console.log(openaiClient.getTextContent(response));
   }
 
   console.log('\n');
@@ -113,7 +113,7 @@ List 5 features.`;
   console.log('5️⃣ Constrained Generation:');
   console.log('-'.repeat(60));
 
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     const promptService = new PromptService('claude');
     const chatService = new ChatService('claude');
 
@@ -141,7 +141,7 @@ List 5 features.`;
   console.log('6️⃣ Self-Consistency (Multiple Attempts):');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const promptService = new PromptService('openai');
 
     const question = 'What are the top 3 AI trends for startups in 2024?';
@@ -166,7 +166,7 @@ List 5 features.`;
   console.log('7️⃣ Prompt Chaining:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const promptService = new PromptService('openai');
 
     const chain = [
@@ -195,7 +195,7 @@ List 5 features.`;
   console.log('8️⃣ Negative Prompting:');
   console.log('-'.repeat(60));
 
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     const promptService = new PromptService('claude');
     const chatService = new ChatService('claude');
 
@@ -229,7 +229,7 @@ List 5 features.`;
   console.log('9️⃣ Temperature Tuning:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const prompt = 'Write a creative tagline for an AI startup';
 
@@ -252,7 +252,7 @@ List 5 features.`;
   console.log('🔟 Meta-Prompting:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
 
     const metaPrompt = `You are an expert at writing prompts for AI systems.
@@ -271,7 +271,7 @@ Write the prompt:`;
       temperature: 0.7,
     });
 
-    console.log(response.choices[0].message.content);
+    console.log(openaiClient.getTextContent(response));
   }
 }
 

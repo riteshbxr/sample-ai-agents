@@ -53,11 +53,6 @@ const examples = {
         file: 'vision-example.js',
         description: 'Image understanding and analysis capabilities',
       },
-      {
-        name: 'Unified Client Interface',
-        file: 'unified-client-example.js',
-        description: 'Unified interface for OpenAI and Claude clients',
-      },
       // Third-Party SDKs
       {
         name: 'LangGraph',

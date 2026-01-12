@@ -313,11 +313,17 @@ export class PromptService {
       schema
     );
 
-    const response = await this.client.chat([{ role: 'user', content: prompt }], {
+    const chatOptions = {
       temperature: options.temperature || 0,
-      response_format: { type: 'json_object' },
       ...options,
-    });
+    };
+
+    // Only add response_format for OpenAI providers (Claude doesn't support it)
+    if (this.provider !== 'claude') {
+      chatOptions.response_format = { type: 'json_object' };
+    }
+
+    const response = await this.client.chat([{ role: 'user', content: prompt }], chatOptions);
 
     const content = this.client.getTextContent(response);
 

@@ -1,5 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 import crypto from 'crypto';
 
 /**
@@ -137,7 +137,7 @@ async function cachingExample() {
   console.log('1️⃣ Basic Response Caching:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const cache = new ResponseCache(60000); // 1 minute TTL for demo
     const cachedClient = new CachedAIClient(openaiClient, cache);
@@ -168,7 +168,7 @@ async function cachingExample() {
   console.log('2️⃣ Cache Statistics:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const cache = new ResponseCache(60000);
     const cachedClient = new CachedAIClient(openaiClient, cache);
@@ -235,7 +235,7 @@ async function cachingExample() {
   console.log('  - Time-sensitive queries (today, now, current) bypass cache');
   console.log('  - Static queries (definitions, explanations) use cache\n');
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const cachedClient = new CachedAIClient(openaiClient, smartCache);
 
@@ -270,7 +270,7 @@ async function cachingExample() {
     };
   }
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const cache = new ResponseCache();
     const openaiClient = createAIClient('azure-openai');
     const cachedClient = new CachedAIClient(openaiClient, cache);

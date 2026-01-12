@@ -1,5 +1,5 @@
 import { EmbeddingsService } from '../../services/embeddings-service.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Standalone Embeddings Example
@@ -8,12 +8,12 @@ import { config } from '../../config.js';
 async function embeddingsExample() {
   console.log('=== Standalone Embeddings Example ===\n');
 
-  if (!config.openai.azureApiKey && !config.openai.standardApiKey) {
+  if (!providerUtils.isProviderAvailable('openai')) {
     console.log('⚠️ OpenAI API key required for embeddings example');
     return;
   }
 
-  const embeddingsService = new EmbeddingsService('openai');
+  const embeddingsService = new EmbeddingsService();
 
   // Example 1: Semantic Similarity Search
   console.log('1️⃣ Semantic Similarity Search:');

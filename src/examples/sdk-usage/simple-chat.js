@@ -1,5 +1,5 @@
 import { ChatService } from '../../services/chat-service.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Simple chat example - Basic usage of OpenAI and Claude
@@ -8,7 +8,7 @@ async function simpleChatExample() {
   console.log('=== Simple Chat Example ===\n');
 
   // Example with OpenAI/Azure OpenAI
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     console.log('Using OpenAI...');
     const chatService = new ChatService('openai');
 
@@ -30,7 +30,7 @@ async function simpleChatExample() {
   }
 
   // Example with Claude
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     console.log('Using Claude...');
     const chatService = new ChatService('claude');
 

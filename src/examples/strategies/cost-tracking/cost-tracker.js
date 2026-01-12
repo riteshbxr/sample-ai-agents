@@ -1,6 +1,6 @@
 import { estimateTokens } from '../../../utils/token-utils.js';
 import { PRICING } from '../../../utils/pricing.js';
-import { config } from '../../../config.js';
+import { providerUtils } from '../../../config.js';
 import { createAIClient } from '../../../clients/client-factory.js';
 
 /**
@@ -98,7 +98,7 @@ export class CostTracker {
           provider === 'azure-openai' ||
           provider === 'openai-standard'
         ) {
-          const defaultModel = config.openai.model;
+          const defaultModel = providerUtils.getDefaultModel('openai');
           const pricing =
             PRICING.openai[model] ||
             PRICING.openai[defaultModel] ||
@@ -117,7 +117,7 @@ export class CostTracker {
             totalCost,
           };
         } else if (provider === 'claude') {
-          const defaultModel = config.claude.model;
+          const defaultModel = providerUtils.getDefaultModel('claude');
           const pricing =
             PRICING.claude[model] ||
             PRICING.claude[defaultModel] ||

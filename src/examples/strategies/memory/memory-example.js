@@ -3,7 +3,7 @@ import {
   countMessages as countMessagesUtil,
 } from '../../utils/token-utils.js';
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Memory Management Example
@@ -128,7 +128,7 @@ async function memoryExample() {
   console.log('1️⃣ Conversation with Automatic Summarization:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const manager = new ConversationManager(openaiClient, 4000, 0.7);
 
@@ -190,7 +190,7 @@ async function memoryExample() {
     }
   }
 
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     const claudeClient = createAIClient('claude');
     const contextManager = new ContextWindowManager(6);
 
@@ -255,7 +255,7 @@ async function memoryExample() {
     }
   }
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const memory = new LongTermMemory();
 
@@ -320,7 +320,7 @@ async function memoryExample() {
 
   const persistentConv = new PersistentConversation();
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const messages = [
       { role: 'system', content: 'You are helpful.' },
       { role: 'user', content: 'Hello!' },

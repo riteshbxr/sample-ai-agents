@@ -75,11 +75,17 @@ export class ChatService {
    * console.log(data); // { name: "John", age: 30 }
    */
   async getStructuredOutput(messages, options = {}) {
+    // Claude doesn't support response_format parameter
+    // For Claude, we rely on prompt engineering to get JSON output
     const chatOptions = {
-      response_format: { type: 'json_object' },
       temperature: 0,
       ...options,
     };
+
+    // Only add response_format for OpenAI providers
+    if (this.provider !== 'claude') {
+      chatOptions.response_format = { type: 'json_object' };
+    }
 
     const response = await this.client.chat(messages, chatOptions);
     const textContent = this.client.getTextContent(response);
@@ -87,6 +93,13 @@ export class ChatService {
     try {
       return JSON.parse(textContent);
     } catch (error) {
+      // For Claude, try to extract JSON from markdown code blocks or plain text
+      const jsonMatch =
+        textContent.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) ||
+        textContent.match(/(\{[\s\S]*\})/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[1]);
+      }
       throw new Error(`Failed to parse JSON response: ${error.message}`);
     }
   }
@@ -115,6 +128,12 @@ export class ChatService {
       ? schema.map((field) => `- ${field}`).join('\n')
       : schema;
 
+    // For Claude, enhance the prompt to ensure JSON output
+    const jsonInstruction =
+      this.provider === 'claude'
+        ? 'Return your response as valid JSON only, without any markdown formatting or additional text.'
+        : 'Return only valid JSON, no additional text.';
+
     const messages = [
       {
         role: 'system',
@@ -122,7 +141,7 @@ export class ChatService {
       },
       {
         role: 'user',
-        content: `Extract the following information from this text and return it as valid JSON:\n${schemaDescription}\n\nText: ${text}\n\nReturn only valid JSON, no additional text.`,
+        content: `Extract the following information from this text and return it as valid JSON:\n${schemaDescription}\n\nText: ${text}\n\n${jsonInstruction}`,
       },
     ];
 

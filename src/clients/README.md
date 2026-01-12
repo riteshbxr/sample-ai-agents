@@ -174,7 +174,7 @@ Use these methods to access responses consistently:
 
 ## Examples
 
-See `src/examples/sdk-usage/unified-client-example.js` for complete examples.
+All examples in `src/examples/` demonstrate the unified client interface. The `createAIClient()` factory function is used throughout the codebase.
 
 ## Interface Validation
 

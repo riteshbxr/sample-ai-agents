@@ -1,5 +1,5 @@
 import { ContextExtractionService } from '../../../services/context-extraction-service.js';
-import { config } from '../../../config.js';
+import { defaultOptions } from '../../../config.js';
 
 /**
  * Context Extraction from Chat History Example
@@ -126,13 +126,10 @@ Return a JSON array of message indices that are relevant to the goal. Example: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      {
-        temperature: 0.3,
-        response_format: { type: 'json_object' },
-      }
+      defaultOptions.getUseCaseOptions('structured')
     );
 
-    const content = response.choices?.[0]?.message?.content || response.content?.[0]?.text || '{}';
+    const content = extractor.client.getTextContent(response) || '{}';
     const result = JSON.parse(content);
 
     // Extract indices (handle different response formats)
@@ -210,8 +207,7 @@ If there are no relevant chat messages, return "" (empty string).`;
 
   // Get extraction from LLM
   const response = await extractor.client.chat(messages);
-  const extractedContext =
-    response.choices?.[0]?.message?.content || response.content?.[0]?.text || '';
+  const extractedContext = extractor.client.getTextContent(response) || '';
 
   return extractedContext === '""' ? '' : extractedContext;
 }
@@ -223,10 +219,7 @@ async function contextExtractionExample() {
   console.log('=== Context Extraction from Chat History Example ===');
   console.log('Context extraction pattern from galactiq\n');
 
-  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
-  console.log(`Using ${provider.toUpperCase()} provider\n`);
-
-  const extractor = new ContextExtractionService(provider);
+  const extractor = new ContextExtractionService();
 
   try {
     // Example chat history (simulating a conversation)
