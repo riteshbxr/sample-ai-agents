@@ -171,7 +171,7 @@ Return a JSON object with an "indices" array of message indices that are relevan
       }
 
       return relevantMessages;
-    } catch (error) {
+    } catch {
       // Fallback: return all filtered messages
       return messages;
     }

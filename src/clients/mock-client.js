@@ -1,6 +1,5 @@
 import { AIClientInterface } from './ai-client-interface.js';
 import { PRICING } from '../utils/pricing.js';
-import { config } from '../config.js';
 
 /**
  * Mock AI Client for Testing

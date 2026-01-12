@@ -45,7 +45,7 @@ const functions = {
         expression,
         result,
       };
-    } catch (error) {
+    } catch {
       return {
         error: 'Invalid expression',
       };

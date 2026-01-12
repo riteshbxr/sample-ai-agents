@@ -52,7 +52,7 @@ export class CostTracker {
 
         // Create client with the model
         client = createAIClient(factoryProvider, model);
-      } catch (error) {
+      } catch {
         // If client creation fails (e.g., missing API keys), fall back to manual calculation
         client = null;
       }

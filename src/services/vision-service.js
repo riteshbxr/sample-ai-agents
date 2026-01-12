@@ -21,7 +21,7 @@ export class VisionService {
     try {
       const imageBuffer = fs.readFileSync(imagePath);
       return imageBuffer.toString('base64');
-    } catch (error) {
+    } catch {
       console.warn(`Could not read image: ${imagePath}`);
       return null;
     }

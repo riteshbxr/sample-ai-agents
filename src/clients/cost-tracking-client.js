@@ -258,7 +258,7 @@ export class CostTrackingClient extends AIClientInterface {
       }
     };
 
-    const response = await this.client.chatStream(messages, streamOnChunk, options);
+    await this.client.chatStream(messages, streamOnChunk, options);
 
     if (this.autoTrack) {
       const model = this.client.model || config.openai.model || config.claude.model;
