@@ -1,4 +1,6 @@
 import { AIClientInterface } from './ai-client-interface.js';
+import { PRICING } from '../utils/pricing.js';
+import { config } from '../config.js';
 
 /**
  * Mock AI Client for Testing
@@ -577,5 +579,87 @@ export class MockAIClient extends AIClientInterface {
     this.getEmbeddingsHandler = null;
     this.analyzeImageHandler = null;
     this.defaultResponse = 'Mock response';
+  }
+
+  /**
+   * Calculate cost for mock response
+   * Supports both OpenAI and Claude response formats
+   * @param {Object} response - API response with usage information
+   * @param {string} [model] - Optional model name (defaults to client model)
+   * @returns {Object} Cost calculation result with inputTokens, outputTokens, totalTokens, inputCost, outputCost, totalCost
+   */
+  calculateCost(response, model = null) {
+    const modelName = model || this.model;
+    let usage = null;
+
+    // Extract usage based on response format
+    if (this.responseFormat === 'claude') {
+      // Claude format
+      usage = response.usage || {
+        input_tokens: response.usage?.input_tokens || 0,
+        output_tokens: response.usage?.output_tokens || 0,
+      };
+    } else {
+      // OpenAI format (default)
+      usage = response.usage || {
+        prompt_tokens: response.usage?.prompt_tokens || 0,
+        completion_tokens: response.usage?.completion_tokens || 0,
+        total_tokens: response.usage?.total_tokens || 0,
+      };
+    }
+
+    if (!usage || (!usage.prompt_tokens && !usage.input_tokens)) {
+      return {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        inputCost: 0,
+        outputCost: 0,
+        totalCost: 0,
+      };
+    }
+
+    // Determine provider based on response format or model
+    const isClaude = this.responseFormat === 'claude' || modelName.includes('claude');
+    const pricingSource = isClaude ? PRICING.claude : PRICING.openai;
+
+    // Get pricing - use mock pricing as fallback
+    const defaultPricing = pricingSource['mock-model'] || { input: 0.1, output: 0.1 };
+    const pricing = pricingSource[modelName] || defaultPricing;
+
+    // Calculate costs based on format
+    if (isClaude) {
+      const inputTokens = usage.input_tokens || 0;
+      const outputTokens = usage.output_tokens || 0;
+      const inputCost = (inputTokens / 1_000_000) * pricing.input;
+      const outputCost = (outputTokens / 1_000_000) * pricing.output;
+      const totalCost = inputCost + outputCost;
+
+      return {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        inputCost,
+        outputCost,
+        totalCost,
+      };
+    } else {
+      // OpenAI format
+      const inputTokens = usage.prompt_tokens || 0;
+      const outputTokens = usage.completion_tokens || 0;
+      const totalTokens = usage.total_tokens || inputTokens + outputTokens;
+      const inputCost = (inputTokens / 1_000_000) * pricing.input;
+      const outputCost = (outputTokens / 1_000_000) * pricing.output;
+      const totalCost = inputCost + outputCost;
+
+      return {
+        inputTokens,
+        outputTokens,
+        totalTokens,
+        inputCost,
+        outputCost,
+        totalCost,
+      };
+    }
   }
 }

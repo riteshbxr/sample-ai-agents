@@ -1,6 +1,7 @@
 import { OpenAI } from 'openai';
 import { config } from '../config.js';
 import { AIClientInterface } from './ai-client-interface.js';
+import { PRICING } from '../utils/pricing.js';
 
 /**
  * Azure OpenAI Client
@@ -393,5 +394,45 @@ export class AzureOpenAIClient extends AIClientInterface {
     });
 
     return response.choices[0].message.content;
+  }
+
+  /**
+   * Calculate cost for OpenAI response
+   * @param {Object} response - OpenAI API response with usage information
+   * @param {string} [model] - Optional model name (defaults to client model)
+   * @returns {Object} Cost calculation result with inputTokens, outputTokens, totalTokens, inputCost, outputCost, totalCost
+   */
+  calculateCost(response, model = null) {
+    const usage = response.usage;
+    if (!usage) {
+      return {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        inputCost: 0,
+        outputCost: 0,
+        totalCost: 0,
+      };
+    }
+
+    const modelName = model || this.model;
+    const defaultModel = config.openai.model;
+    const pricing =
+      PRICING.openai[modelName] ||
+      PRICING.openai[defaultModel] ||
+      PRICING.openai['gpt-4-turbo-preview'];
+
+    const inputCost = (usage.prompt_tokens / 1_000_000) * pricing.input;
+    const outputCost = (usage.completion_tokens / 1_000_000) * pricing.output;
+    const totalCost = inputCost + outputCost;
+
+    return {
+      inputTokens: usage.prompt_tokens,
+      outputTokens: usage.completion_tokens,
+      totalTokens: usage.total_tokens,
+      inputCost,
+      outputCost,
+      totalCost,
+    };
   }
 }

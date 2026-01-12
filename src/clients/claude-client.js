@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from '../config.js';
 import { AIClientInterface } from './ai-client-interface.js';
+import { PRICING } from '../utils/pricing.js';
 
 /**
  * Claude Client
@@ -265,5 +266,45 @@ export class ClaudeClient extends AIClientInterface {
     throw new Error(
       'Claude does not support OpenAI Assistants API. Please use OpenAI for assistants functionality.'
     );
+  }
+
+  /**
+   * Calculate cost for Claude response
+   * @param {Object} response - Claude API response with usage information
+   * @param {string} [model] - Optional model name (defaults to client model)
+   * @returns {Object} Cost calculation result with inputTokens, outputTokens, totalTokens, inputCost, outputCost, totalCost
+   */
+  calculateCost(response, model = null) {
+    const usage = response.usage;
+    if (!usage) {
+      return {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        inputCost: 0,
+        outputCost: 0,
+        totalCost: 0,
+      };
+    }
+
+    const modelName = model || this.model;
+    const defaultModel = config.claude.model;
+    const pricing =
+      PRICING.claude[modelName] ||
+      PRICING.claude[defaultModel] ||
+      PRICING.claude['claude-sonnet-4-5-20250929'];
+
+    const inputCost = (usage.input_tokens / 1_000_000) * pricing.input;
+    const outputCost = (usage.output_tokens / 1_000_000) * pricing.output;
+    const totalCost = inputCost + outputCost;
+
+    return {
+      inputTokens: usage.input_tokens,
+      outputTokens: usage.output_tokens,
+      totalTokens: usage.input_tokens + usage.output_tokens,
+      inputCost,
+      outputCost,
+      totalCost,
+    };
   }
 }
