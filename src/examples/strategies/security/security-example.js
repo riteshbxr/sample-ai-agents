@@ -1,5 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Security & Prompt Injection Prevention Example
@@ -137,7 +137,7 @@ async function securityExample() {
   console.log('3️⃣ Testing Prompt Injection Attempts:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
 
     const injectionAttempts = [
@@ -174,7 +174,7 @@ async function securityExample() {
           { role: 'user', content: sanitized.sanitized },
         ]);
 
-        const responseText = response.choices[0].message.content;
+        const responseText = openaiClient.getTextContent(response);
 
         // Check if injection was successful
         const injectionSuccessful =

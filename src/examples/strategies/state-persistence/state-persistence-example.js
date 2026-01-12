@@ -3,7 +3,7 @@ import {
   StatefulAgent,
   TaskStateManager,
 } from '../../../services/state-persistence-service.js';
-import { config } from '../../../config.js';
+import { providerUtils } from '../../../config.js';
 
 /**
  * State Persistence / Checkpointing Example
@@ -73,7 +73,7 @@ async function statePersistenceExample() {
   console.log('=== State Persistence / Checkpointing Example ===');
   console.log('State management pattern from galactiq\n');
 
-  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+  const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const checkpointStore = new CheckpointStore();

@@ -1,5 +1,5 @@
 import { FunctionCallingAgent } from '../../agents/function-calling-agent.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Function Calling Agent Example
@@ -57,7 +57,7 @@ async function agentExample() {
   console.log('=== Function Calling Agent Example ===\n');
 
   // Choose provider: 'openai' or 'claude'
-  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+  const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const agent = new FunctionCallingAgent(provider);

@@ -1,5 +1,5 @@
 import { AssistantsService } from '../../services/assistants-service.js';
-import { config } from '../../config.js';
+import { config, providerUtils } from '../../config.js';
 
 /**
  * OpenAI Assistants API Example
@@ -10,7 +10,7 @@ async function assistantsAPIExample() {
   console.log('=== OpenAI Assistants API Example ===\n');
 
   // Check if standard OpenAI API key is available
-  if (!config.openai.standardApiKey) {
+  if (!providerUtils.isProviderAvailable('openai-standard')) {
     if (config.openai.azure.enabled) {
       console.log('⚠️  Assistants API is not available with Azure OpenAI.');
       console.log("   The Assistants API is only available through OpenAI's direct API.");
@@ -27,7 +27,7 @@ async function assistantsAPIExample() {
   }
 
   // If Azure is enabled but standard key exists, warn but allow
-  if (config.openai.azure.enabled) {
+  if (config.openai.defaultProvider == 'azure-openai') {
     console.log(
       'ℹ️  Note: Azure OpenAI is configured, but using standard OpenAI for Assistants API.'
     );

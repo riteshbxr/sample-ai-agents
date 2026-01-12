@@ -328,34 +328,6 @@ const similarity = cosineSimilarity(embeddings[0], embeddings[1]);
 
 **Beyond RAG:** Embeddings aren't just for RAG - they're powerful for many tasks!
 
-### Unified Client Interface
-
-**File:** `src/examples/sdk-usage/unified-client-example.js`
-
-Use OpenAI and Claude clients interchangeably with a unified interface:
-
-```javascript
-import { createAIClient } from './clients/ai-client-interface.js';
-
-// Create client - works with both providers
-const client = await createAIClient('openai');  // or 'claude'
-
-// Same API regardless of provider
-const response = await client.chat([
-  { role: 'user', content: 'Hello!' }
-]);
-
-const text = client.getTextContent(response);
-```
-
-**Benefits:**
-- **Provider Abstraction**: Switch between OpenAI and Claude easily
-- **Consistent API**: Same methods work for both providers
-- **Code Reusability**: Write code once, use with any provider
-- **Easy Testing**: Test with different providers without code changes
-
-**File:** `src/clients/README.md` has detailed documentation on the unified interface.
-
 ---
 
 ## 5. Function Calling and Tool Use

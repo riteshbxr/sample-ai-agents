@@ -1,5 +1,5 @@
 import { FunctionCallingAgent } from '../../agents/function-calling-agent.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Agent-to-Agent (A2A) Communication Example
@@ -435,7 +435,7 @@ async function a2aAgentExample() {
   console.log('=== Agent-to-Agent (A2A) Communication Example ===');
   console.log('Direct agent communication for collaborative problem-solving\n');
 
-  const provider = config.openai.azureApiKey || config.openai.standardApiKey ? 'openai' : 'claude';
+  const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
   console.log(`Using ${provider.toUpperCase()} provider\n`);
 
   const system = new A2AMultiAgentSystem(provider);

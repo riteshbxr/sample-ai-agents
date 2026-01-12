@@ -1,5 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Batch Processing Example
@@ -93,7 +93,7 @@ async function batchExample() {
   console.log('1️⃣ Parallel Chat Processing:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const processor = new BatchProcessor(openaiClient, 3);
 
@@ -109,7 +109,7 @@ async function batchExample() {
 
     const { results, errors } = await processor.processBatch(questions, async (question) => {
       const response = await openaiClient.chat([{ role: 'user', content: question }]);
-      return response.choices[0].message.content.substring(0, 100);
+      return openaiClient.getTextContent(response).substring(0, 100);
     });
 
     console.log(`\n✅ Successfully processed: ${results.length}`);
@@ -127,7 +127,7 @@ async function batchExample() {
   console.log('2️⃣ Batch Text Classification:');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const processor = new BatchProcessor(openaiClient, 5);
 
@@ -153,7 +153,7 @@ async function batchExample() {
         ],
         { temperature: 0 }
       );
-      return response.choices[0].message.content.trim();
+      return openaiClient.getTextContent(response).trim();
     });
 
     results.forEach((r, i) => {
@@ -167,7 +167,7 @@ async function batchExample() {
   console.log('3️⃣ Sequential Processing (with dependencies):');
   console.log('-'.repeat(60));
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
 
     const steps = [
@@ -186,7 +186,7 @@ async function batchExample() {
 
       const response = await openaiClient.chat([{ role: 'user', content: prompt }]);
 
-      const result = response.choices[0].message.content;
+      const result = openaiClient.getTextContent(response);
       results.push({ step: step.task, result });
       previousResult = result;
 
@@ -239,7 +239,7 @@ async function batchExample() {
     }
   }
 
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const rateLimitedProcessor = new RateLimitedProcessor(openaiClient, 2);
 
@@ -250,7 +250,7 @@ async function batchExample() {
     const promises = items.map((item) =>
       rateLimitedProcessor.process(item, async () => {
         const response = await openaiClient.chat([{ role: 'user', content: `Process: ${item}` }]);
-        return response.choices[0].message.content.substring(0, 50);
+        return openaiClient.getTextContent(response).substring(0, 50);
       })
     );
 

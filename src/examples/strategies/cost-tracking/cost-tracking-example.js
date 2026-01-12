@@ -1,5 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils } from '../../config.js';
 import { CostTracker } from './cost-tracker.js';
 
 /**
@@ -13,7 +13,7 @@ async function costTrackingExample() {
   const tracker = new CostTracker();
 
   // Track OpenAI requests
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     console.log('💰 Tracking OpenAI requests...');
 
     const openaiClient = createAIClient('azure-openai');
@@ -33,7 +33,7 @@ async function costTrackingExample() {
   }
 
   // Track Claude requests
-  if (config.claude.apiKey) {
+  if (providerUtils.isProviderAvailable('claude')) {
     console.log('\n💰 Tracking Claude requests...');
 
     const claudeClient = createAIClient('claude');
@@ -54,7 +54,7 @@ async function costTrackingExample() {
 
   // Simulate multiple requests
   console.log('\n💰 Simulating multiple requests...');
-  if (config.openai.azureApiKey || config.openai.standardApiKey) {
+  if (providerUtils.isProviderAvailable('openai')) {
     const openaiClient = createAIClient('azure-openai');
     const queries = [
       'What is machine learning?',
@@ -76,7 +76,9 @@ async function costTrackingExample() {
   // Cost optimization tips
   console.log('\n💡 Cost Optimization Tips:');
   console.log('-'.repeat(60));
-  console.log(`1. Use cheaper models (e.g., ${config.openai.model}) for simple tasks`);
+  console.log(
+    `1. Use cheaper models (e.g., ${providerUtils.getDefaultModel('openai')}) for simple tasks`
+  );
   console.log('2. Set max_tokens to limit output length');
   console.log('3. Cache responses for repeated queries');
   console.log('4. Use streaming to show progress without waiting');

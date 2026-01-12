@@ -1,5 +1,5 @@
 import { createAIClient } from '../../clients/client-factory.js';
-import { config } from '../../config.js';
+import { providerUtils, defaultOptions } from '../../config.js';
 
 /**
  * Claude Assistants-like Example
@@ -109,11 +109,11 @@ class ClaudeAssistant {
         this.tools.length > 0
           ? await this.client.chatWithTools(messages, claudeTools, {
               system: this.instructions,
-              max_tokens: 4096,
+              ...defaultOptions.getDefaultOptions(),
             })
           : await this.client.chat(messages, {
               system: this.instructions,
-              max_tokens: 4096,
+              ...defaultOptions.getDefaultOptions(),
             });
 
       // Check for tool use
@@ -191,7 +191,7 @@ async function claudeAssistantsExample() {
   console.log('💡 Note: Claude uses Messages API with tool use, not a separate Assistants API');
   console.log('   This example demonstrates similar persistent conversation patterns\n');
 
-  if (!config.claude.apiKey) {
+  if (!providerUtils.isProviderAvailable('claude')) {
     console.log('⚠️  Claude API key required for this example');
     console.log('   Please set ANTHROPIC_API_KEY in your .env file');
     return;

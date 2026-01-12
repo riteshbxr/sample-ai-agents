@@ -168,13 +168,6 @@ npm run demo:vision
 ```
 Demonstrates image description, OCR, visual Q&A, and code extraction.
 
-#### Unified Client Interface
-Use OpenAI and Claude clients interchangeably with a unified interface:
-```bash
-npm run demo:unified-client
-```
-Demonstrates the unified AIClientInterface that works with both providers.
-
 ### 🎯 Higher-Level Strategy Examples
 
 These examples demonstrate advanced patterns, strategies, and architectural approaches:
@@ -303,7 +296,6 @@ ai-agents/
 │       │   ├── claude-assistants-example.js      # Claude Messages API
 │       │   ├── embeddings-example.js             # Standalone embeddings
 │       │   ├── vision-example.js                 # Vision/image analysis
-│       │   ├── unified-client-example.js         # Unified client interface
 │       │   ├── langgraph-example.js              # LangGraph workflows
 │       │   └── langfuse-example.js                # Langfuse observability
 │       └── strategies/              # Higher-level strategies and patterns
@@ -456,11 +448,6 @@ These examples show direct usage of OpenAI/Claude SDK APIs:
 - **Strategy**: Multimodal AI for image understanding
 - **Techniques**: Image description, OCR, visual Q&A, code extraction
 - **Use Cases**: Document processing, image analysis, visual content understanding
-
-#### 9. **Unified Client Interface** (`sdk-usage/unified-client-example.js`)
-- **Strategy**: Unified interface for multiple AI providers
-- **Techniques**: Provider abstraction, interface consistency, factory pattern
-- **Use Cases**: Multi-provider support, provider switching, code reusability
 
 ### 🎯 Higher-Level Strategy Examples
 
@@ -657,7 +644,6 @@ AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
 - **Claude Assistants-like** - Persistent conversations with tool use (Claude Messages API)
 - **Embeddings** - Standalone embeddings for similarity, clustering, classification
 - **Vision** - Image analysis, OCR, and visual question answering
-- **Unified Client Interface** - Unified interface for OpenAI and Claude clients
 - **LangGraph** - Stateful, multi-actor agent workflows
 - **Langfuse** - LLM observability, tracing, and monitoring
 
