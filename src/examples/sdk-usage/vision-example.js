@@ -1,4 +1,4 @@
-import { createAIClient } from '../../clients/client-factory.js';
+import { VisionService } from '../../services/vision-service.js';
 import { config } from '../../config.js';
 import fs from 'fs';
 
@@ -9,110 +9,38 @@ import fs from 'fs';
 async function visionExample() {
   console.log('=== Vision/Image Analysis Example ===\n');
 
-  // Helper function to encode image to base64
-  function encodeImage(imagePath) {
-    try {
-      const imageBuffer = fs.readFileSync(imagePath);
-      return imageBuffer.toString('base64');
-    } catch (error) {
-      console.warn(`Could not read image: ${imagePath}`);
-      return null;
-    }
-  }
-
-  // Helper function to create a simple test image (1x1 pixel PNG) as base64
-  // This is a minimal valid PNG that can be used for testing
-  function createTestImageBase64() {
-    // Minimal 1x1 pixel red PNG in base64
-    // This is a valid PNG that can be used for testing vision API
-    return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-  }
+  const visionService = new VisionService();
 
   // Example 1: Image description with OpenAI
   if (config.openai.azureApiKey || config.openai.standardApiKey) {
-    // Force use of standard OpenAI for vision API (works better with vision models)
-    const openaiClient = createAIClient('openai-standard');
     console.log(`1️⃣ Image Description (OpenAI ${config.openai.visionModel}):`);
     console.log('-'.repeat(60));
 
-    // Note: For vision, you need to provide an image URL or base64
     // Try local image first, then fallback to test image
     const imagePath = './example-image.png'; // Replace with your image
-
-    let imageBase64 = null;
+    let image = null;
 
     if (fs.existsSync(imagePath)) {
-      imageBase64 = encodeImage(imagePath);
-      if (imageBase64) {
-        console.log('   Using local image file');
-      }
-    }
-
-    // If no local image, use a simple test image (1x1 pixel PNG)
-    // This ensures the example works without external dependencies
-    if (!imageBase64) {
-      imageBase64 = createTestImageBase64();
+      image = imagePath;
+      console.log('   Using local image file');
+    } else {
+      image = visionService.createTestImageBase64();
       console.log(
         '   Using test image (1x1 pixel PNG) - replace with your own image for better results'
       );
     }
 
-    const messages = [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Describe this image in detail. What do you see?',
-          },
-          ...(imageBase64
-            ? [
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:image/png;base64,${imageBase64}`,
-                  },
-                },
-              ]
-            : []),
-        ],
-      },
-    ];
-
     try {
-      // Note: Vision models may have different model names
-      // Use config.openai.visionModel for vision-specific model
-      const response = await openaiClient.client.chat.completions.create({
-        model: config.openai.visionModel, // Use dedicated vision model from config
-        messages,
-        max_tokens: 300,
-      });
-
+      const description = await visionService.analyzeImage(
+        image,
+        'Describe this image in detail. What do you see?',
+        { model: config.openai.visionModel, max_tokens: 300 }
+      );
       console.log('Image Description:');
-      console.log(response.choices[0].message.content);
+      console.log(description);
     } catch (error) {
       console.log('⚠️ Vision API error occurred');
       console.log('   Error:', error.message);
-
-      if (error.message.includes('downloading') || error.status === 400) {
-        console.log('\n💡 Troubleshooting:');
-        console.log('   - Image URL might be inaccessible or invalid');
-        console.log('   - Try using a local image file instead (base64 encoded)');
-        console.log('   - Ensure the image URL is publicly accessible');
-        console.log('   - Some URLs may be blocked by the API');
-      } else if (error.message.includes('model') || error.message.includes('deployment')) {
-        console.log('\n💡 Troubleshooting:');
-        console.log(`   - Make sure ${config.openai.visionModel} supports vision capabilities`);
-        console.log('   - For Azure OpenAI, ensure your deployment supports vision');
-        console.log(
-          '   - Try setting OPENAI_VISION_MODEL to a vision-capable model (e.g., gpt-4o)'
-        );
-      } else {
-        console.log('\n💡 Troubleshooting:');
-        console.log(`   - Verify ${config.openai.visionModel} is a valid vision-capable model`);
-        console.log('   - Check your API key has access to vision models');
-        console.log('   - Ensure the model supports image inputs');
-      }
     }
   }
 
@@ -120,44 +48,23 @@ async function visionExample() {
 
   // Example 2: Image analysis with Claude
   if (config.claude.apiKey) {
-    const claudeClient = createAIClient('claude');
-    console.log(`2️⃣ Image Analysis (Claude ${claudeClient.model || config.claude.model}):`);
+    const claudeVisionService = new VisionService('claude');
+    console.log(`2️⃣ Image Analysis (Claude ${config.claude.model}):`);
     console.log('-'.repeat(60));
 
-    // Use test image (base64) to avoid URL download issues
-    const testImageBase64 = createTestImageBase64();
+    const testImage = claudeVisionService.createTestImageBase64();
     console.log(
       '   Using test image (1x1 pixel PNG) - replace with your own image for better results'
     );
 
     try {
-      const response = await claudeClient.client.messages.create({
-        model: claudeClient.model,
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: 'image/png',
-                  data: testImageBase64,
-                },
-              },
-              {
-                type: 'text',
-                text: 'Analyze this image. What are the main elements? What mood or atmosphere does it convey?',
-              },
-            ],
-          },
-        ],
-      });
-
-      const textContent = claudeClient.getTextContent(response);
+      const analysis = await claudeVisionService.analyzeImage(
+        testImage,
+        'Analyze this image. What are the main elements? What mood or atmosphere does it convey?',
+        { max_tokens: 1024 }
+      );
       console.log('Image Analysis:');
-      console.log(textContent);
+      console.log(analysis);
     } catch (error) {
       console.log('⚠️ Vision API error:', error.message);
     }
@@ -183,48 +90,24 @@ async function visionExample() {
   console.log('-'.repeat(60));
 
   if (config.claude.apiKey) {
-    const claudeClient = createAIClient('claude');
-
-    // Use test image (base64) to avoid URL download issues
-    const testImageBase64 = createTestImageBase64();
+    const claudeVisionService = new VisionService('claude');
+    const testImage = claudeVisionService.createTestImageBase64();
     const questions = [
       'What type of environment is shown in this image?',
       'What colors dominate the image?',
       'What time of day does this appear to be?',
     ];
 
-    for (const question of questions) {
-      try {
-        const response = await claudeClient.client.messages.create({
-          model: claudeClient.model,
-          max_tokens: 200,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'image',
-                  source: {
-                    type: 'base64',
-                    media_type: 'image/png',
-                    data: testImageBase64,
-                  },
-                },
-                {
-                  type: 'text',
-                  text: question,
-                },
-              ],
-            },
-          ],
-        });
-
-        const answer = claudeClient.getTextContent(response);
+    try {
+      const answers = await claudeVisionService.answerQuestions(testImage, questions, {
+        max_tokens: 200,
+      });
+      for (const question of questions) {
         console.log(`Q: ${question}`);
-        console.log(`A: ${answer}\n`);
-      } catch (error) {
-        console.log(`Error answering: ${error.message}\n`);
+        console.log(`A: ${answers[question]}\n`);
       }
+    } catch (error) {
+      console.log(`Error answering: ${error.message}\n`);
     }
   }
 

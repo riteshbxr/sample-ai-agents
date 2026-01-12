@@ -1,3 +1,5 @@
+import { PromptService } from '../../services/prompt-service.js';
+import { ChatService } from '../../services/chat-service.js';
 import { createAIClient } from '../../clients/client-factory.js';
 import { config } from '../../config.js';
 
@@ -13,33 +15,26 @@ async function promptTechniquesExample() {
   console.log('-'.repeat(60));
 
   if (config.openai.azureApiKey || config.openai.standardApiKey) {
-    const openaiClient = createAIClient('azure-openai');
+    const promptService = new PromptService('openai');
 
-    const fewShotPrompt = `
-Classify the sentiment of these customer reviews:
+    const examples = [
+      { input: 'This product is amazing! I love it.', output: 'positive' },
+      { input: 'Terrible quality, waste of money.', output: 'negative' },
+      { input: "It's okay, nothing special.", output: 'neutral' },
+      { input: "Best purchase I've made this year!", output: 'positive' },
+    ];
 
-Review: "This product is amazing! I love it."
-Sentiment: positive
-
-Review: "Terrible quality, waste of money."
-Sentiment: negative
-
-Review: "It's okay, nothing special."
-Sentiment: neutral
-
-Review: "Best purchase I've made this year!"
-Sentiment: positive
-
-Now classify this review:
-Review: "The product works but could be better."
-Sentiment:`;
-
-    const response = await openaiClient.chat([{ role: 'user', content: fewShotPrompt }], {
-      temperature: 0,
-    });
+    const result = await promptService.fewShotLearning(
+      examples,
+      'The product works but could be better.',
+      {
+        taskDescription: 'Classify the sentiment of these customer reviews:',
+        temperature: 0,
+      }
+    );
 
     console.log('Few-shot classification:');
-    console.log(response.choices[0].message.content);
+    console.log(result);
   }
 
   console.log('\n');
@@ -49,24 +44,19 @@ Sentiment:`;
   console.log('-'.repeat(60));
 
   if (config.claude.apiKey) {
-    const claudeClient = createAIClient('claude');
+    const promptService = new PromptService('claude');
 
-    const cotPrompt = `Solve this step by step:
-
-Problem: A startup has 100 customers. 60% are on the basic plan ($10/month), 
+    const problem = `A startup has 100 customers. 60% are on the basic plan ($10/month), 
 30% are on pro ($30/month), and 10% are on enterprise ($100/month). 
-What's the monthly recurring revenue (MRR)?
+What's the monthly recurring revenue (MRR)?`;
 
-Let's think step by step:
-1. Calculate customers per plan
-2. Calculate revenue per plan
-3. Sum total MRR`;
+    const steps = ['Calculate customers per plan', 'Calculate revenue per plan', 'Sum total MRR'];
 
-    const response = await claudeClient.chat([{ role: 'user', content: cotPrompt }], {
+    const result = await promptService.chainOfThought(problem, steps, {
       temperature: 0.3,
     });
 
-    console.log(claudeClient.getTextContent(response));
+    console.log(result);
   }
 
   console.log('\n');
@@ -76,20 +66,20 @@ Let's think step by step:
   console.log('-'.repeat(60));
 
   if (config.openai.azureApiKey || config.openai.standardApiKey) {
-    const openaiClient = createAIClient('azure-openai');
+    const promptService = new PromptService('openai');
 
-    const rolePrompt = `You are a senior product manager at a tech startup with 10 years of experience.
-You're known for data-driven decisions and user-centric thinking.
+    const role = `a senior product manager at a tech startup with 10 years of experience.
+You're known for data-driven decisions and user-centric thinking.`;
 
-A junior PM asks: "Should we add a dark mode feature to our app?"
+    const question = `A junior PM asks: "Should we add a dark mode feature to our app?"
 
 Provide your expert advice:`;
 
-    const response = await openaiClient.chat([{ role: 'user', content: rolePrompt }], {
+    const result = await promptService.rolePlaying(role, question, {
       temperature: 0.7,
     });
 
-    console.log(response.choices[0].message.content.substring(0, 300));
+    console.log(result.substring(0, 300));
   }
 
   console.log('\n');
@@ -124,21 +114,25 @@ List 5 features.`;
   console.log('-'.repeat(60));
 
   if (config.claude.apiKey) {
-    const claudeClient = createAIClient('claude');
+    const promptService = new PromptService('claude');
+    const chatService = new ChatService('claude');
 
-    const constrainedPrompt = `Generate a product tagline that:
-- Is exactly 5-7 words
-- Mentions AI or automation
-- Is catchy and memorable
-- Appeals to startups
+    const task = 'Generate a product tagline. Generate 3 options, numbered.';
+    const constraints = {
+      do: [
+        'Is exactly 5-7 words',
+        'Mentions AI or automation',
+        'Is catchy and memorable',
+        'Appeals to startups',
+      ],
+    };
 
-Generate 3 options, numbered.`;
-
-    const response = await claudeClient.chat([{ role: 'user', content: constrainedPrompt }], {
+    const prompt = promptService.createConstrainedPrompt(task, constraints);
+    const response = await chatService.chat([{ role: 'user', content: prompt }], {
       temperature: 0.8,
     });
 
-    console.log(claudeClient.getTextContent(response));
+    console.log(response.content);
   }
 
   console.log('\n');
@@ -148,21 +142,19 @@ Generate 3 options, numbered.`;
   console.log('-'.repeat(60));
 
   if (config.openai.azureApiKey || config.openai.standardApiKey) {
-    const openaiClient = createAIClient('azure-openai');
+    const promptService = new PromptService('openai');
 
     const question = 'What are the top 3 AI trends for startups in 2024?';
 
     console.log('Generating 3 responses for consistency check...\n');
 
-    const responses = [];
-    for (let i = 0; i < 3; i++) {
-      const response = await openaiClient.chat([{ role: 'user', content: question }], {
-        temperature: 0.7,
-      });
+    const responses = await promptService.selfConsistency(question, 3, {
+      temperature: 0.7,
+    });
 
-      responses.push(response.choices[0].message.content);
-      console.log(`Response ${i + 1}: ${response.choices[0].message.content.substring(0, 100)}...`);
-    }
+    responses.forEach((response, i) => {
+      console.log(`Response ${i + 1}: ${response.substring(0, 100)}...`);
+    });
 
     // Check for common themes
     console.log('\n✅ Generated 3 consistent responses');
@@ -175,27 +167,26 @@ Generate 3 options, numbered.`;
   console.log('-'.repeat(60));
 
   if (config.openai.azureApiKey || config.openai.standardApiKey) {
-    const openaiClient = createAIClient('azure-openai');
+    const promptService = new PromptService('openai');
 
-    // Step 1: Generate ideas
-    const ideasResponse = await openaiClient.chat([
-      { role: 'user', content: 'Generate 5 startup ideas for AI agents' },
-    ]);
-    const ideas = ideasResponse.choices[0].message.content;
+    const chain = [
+      {
+        prompt: 'Generate 5 startup ideas for AI agents',
+        options: {},
+      },
+      {
+        prompt: 'Evaluate these startup ideas and rank them by market potential:',
+        options: {},
+      },
+    ];
+
+    const results = await promptService.promptChain(chain);
 
     console.log('Step 1 - Generated Ideas:');
-    console.log(ideas.substring(0, 200) + '...\n');
-
-    // Step 2: Evaluate ideas
-    const evaluationResponse = await openaiClient.chat([
-      {
-        role: 'user',
-        content: `Evaluate these startup ideas and rank them by market potential:\n\n${ideas}`,
-      },
-    ]);
+    console.log(results[0].substring(0, 200) + '...\n');
 
     console.log('Step 2 - Evaluation:');
-    console.log(evaluationResponse.choices[0].message.content.substring(0, 200) + '...');
+    console.log(results[1].substring(0, 200) + '...');
   }
 
   console.log('\n');
@@ -205,27 +196,31 @@ Generate 3 options, numbered.`;
   console.log('-'.repeat(60));
 
   if (config.claude.apiKey) {
-    const claudeClient = createAIClient('claude');
+    const promptService = new PromptService('claude');
+    const chatService = new ChatService('claude');
 
-    const negativePrompt = `Write a product description for an AI email tool.
+    const task = 'Write a product description for an AI email tool.';
+    const constraints = {
+      doNot: [
+        'Use buzzwords like "revolutionary" or "game-changing"',
+        'Make unrealistic claims',
+        'Use excessive exclamation marks',
+        'Be overly technical',
+      ],
+      do: [
+        'Be clear and concise',
+        'Focus on benefits',
+        'Use professional tone',
+        'Be specific about features',
+      ],
+    };
 
-DO NOT:
-- Use buzzwords like "revolutionary" or "game-changing"
-- Make unrealistic claims
-- Use excessive exclamation marks
-- Be overly technical
-
-DO:
-- Be clear and concise
-- Focus on benefits
-- Use professional tone
-- Be specific about features`;
-
-    const response = await claudeClient.chat([{ role: 'user', content: negativePrompt }], {
+    const prompt = promptService.createConstrainedPrompt(task, constraints);
+    const response = await chatService.chat([{ role: 'user', content: prompt }], {
       temperature: 0.7,
     });
 
-    console.log(claudeClient.getTextContent(response));
+    console.log(response.content);
   }
 
   console.log('\n');

@@ -1,4 +1,8 @@
-import { createAIClient } from '../../../clients/client-factory.js';
+import {
+  CheckpointStore,
+  StatefulAgent,
+  TaskStateManager,
+} from '../../../services/state-persistence-service.js';
 import { config } from '../../../config.js';
 
 /**
@@ -14,155 +18,6 @@ import { config } from '../../../config.js';
  *
  * This example simulates checkpointing using in-memory storage (can be extended to use Postgres)
  */
-
-/**
- * Simple Checkpoint Store (In-Memory)
- * In production (galactiq), this uses PostgresSaver from @langchain/langgraph-checkpoint-postgres
- */
-class CheckpointStore {
-  constructor() {
-    this.checkpoints = new Map(); // threadId -> checkpoints array
-  }
-
-  /**
-   * Save a checkpoint
-   */
-  async save(threadId, checkpoint) {
-    if (!this.checkpoints.has(threadId)) {
-      this.checkpoints.set(threadId, []);
-    }
-
-    const checkpoints = this.checkpoints.get(threadId);
-    checkpoint.timestamp = new Date().toISOString();
-    checkpoint.id = `checkpoint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    checkpoints.push(checkpoint);
-
-    console.log(`  💾 [Checkpoint] Saved checkpoint for thread ${threadId}`);
-    return checkpoint;
-  }
-
-  /**
-   * Get the latest checkpoint for a thread
-   */
-  async getLatest(threadId) {
-    const checkpoints = this.checkpoints.get(threadId);
-    if (!checkpoints || checkpoints.length === 0) {
-      return null;
-    }
-    return checkpoints[checkpoints.length - 1];
-  }
-
-  /**
-   * Get all checkpoints for a thread
-   */
-  async getAll(threadId) {
-    return this.checkpoints.get(threadId) || [];
-  }
-
-  /**
-   * Clear checkpoints for a thread
-   */
-  async clear(threadId) {
-    this.checkpoints.delete(threadId);
-    console.log(`  🗑️  [Checkpoint] Cleared checkpoints for thread ${threadId}`);
-  }
-}
-
-/**
- * Stateful Agent with Checkpointing
- * Simulates the pattern used in galactiq's AgentExecutors
- */
-class StatefulAgent {
-  constructor(provider = 'openai', checkpointStore) {
-    this.provider = provider;
-    this.client = createAIClient(provider);
-    this.checkpointStore = checkpointStore;
-    this.state = {
-      step: 0,
-      completed: [],
-      currentTask: null,
-      results: {},
-      metadata: {},
-    };
-  }
-
-  /**
-   * Save current state as checkpoint
-   */
-  async checkpoint(threadId) {
-    const checkpoint = {
-      threadId,
-      state: JSON.parse(JSON.stringify(this.state)), // Deep copy
-      timestamp: new Date().toISOString(),
-    };
-    await this.checkpointStore.save(threadId, checkpoint);
-    return checkpoint;
-  }
-
-  /**
-   * Restore state from checkpoint
-   */
-  async restore(threadId) {
-    const checkpoint = await this.checkpointStore.getLatest(threadId);
-    if (checkpoint && checkpoint.state) {
-      this.state = checkpoint.state;
-      console.log(`  ♻️  [State] Restored state from checkpoint`);
-      console.log(`     Step: ${this.state.step}, Completed: ${this.state.completed.length}`);
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Execute a multi-step workflow with checkpointing
-   */
-  async executeWorkflow(threadId, steps) {
-    console.log(`\n🔄 [Workflow] Starting workflow for thread ${threadId}`);
-    console.log(`   Steps: ${steps.length}\n`);
-
-    // Try to restore from checkpoint
-    const restored = await this.restore(threadId);
-    if (restored) {
-      console.log(`  ✅ [Workflow] Resumed from checkpoint at step ${this.state.step}\n`);
-    }
-
-    // Execute remaining steps
-    for (let i = this.state.step; i < steps.length; i++) {
-      const step = steps[i];
-      console.log(`\n📋 [Step ${i + 1}/${steps.length}] ${step.name}`);
-      console.log(`   Description: ${step.description}`);
-
-      try {
-        // Execute step
-        const result = await step.execute(this.state);
-
-        // Update state
-        this.state.step = i + 1;
-        this.state.completed.push(step.name);
-        this.state.results[step.name] = result;
-        this.state.currentTask = step.name;
-
-        console.log(`  ✅ [Step ${i + 1}] Completed: ${step.name}`);
-
-        // Save checkpoint after each step
-        await this.checkpoint(threadId);
-
-        // Simulate potential interruption (for demo purposes)
-        if (step.simulateInterruption) {
-          console.log(`\n  ⚠️  [Interruption] Simulating workflow interruption...`);
-          throw new Error('Workflow interrupted');
-        }
-      } catch (error) {
-        console.log(`  ❌ [Step ${i + 1}] Error: ${error.message}`);
-        // State is already saved, can resume later
-        throw error;
-      }
-    }
-
-    console.log(`\n✅ [Workflow] All steps completed!`);
-    return this.state;
-  }
-}
 
 /**
  * Example workflow steps
@@ -212,93 +67,6 @@ function createWorkflowSteps() {
 }
 
 /**
- * Task State Manager
- * Simulates the A2A task state management from galactiq
- */
-class TaskStateManager {
-  constructor(checkpointStore) {
-    this.checkpointStore = checkpointStore;
-    this.tasks = new Map(); // taskId -> task
-  }
-
-  /**
-   * Create a new task
-   */
-  createTask(taskId, contextId, metadata = {}) {
-    const task = {
-      id: taskId,
-      contextId,
-      status: {
-        state: 'submitted',
-        timestamp: new Date().toISOString(),
-      },
-      metadata: {
-        ...metadata,
-        ttl: Date.now() + 15 * 60 * 1000, // 15 minutes TTL
-      },
-      history: [],
-    };
-    this.tasks.set(taskId, task);
-    return task;
-  }
-
-  /**
-   * Update task status
-   */
-  updateTaskStatus(taskId, state, message = null) {
-    const task = this.tasks.get(taskId);
-    if (!task) {
-      throw new Error(`Task ${taskId} not found`);
-    }
-
-    task.status = {
-      state,
-      timestamp: new Date().toISOString(),
-      message,
-    };
-
-    // Save checkpoint
-    this.checkpointStore.save(task.contextId, {
-      taskId,
-      status: task.status,
-      metadata: task.metadata,
-    });
-
-    return task;
-  }
-
-  /**
-   * Get task
-   */
-  getTask(taskId) {
-    return this.tasks.get(taskId);
-  }
-
-  /**
-   * Check if task is completed (simulating galactiq's checkIfTaskIsCompleted)
-   */
-  async checkTaskCompletion(taskId) {
-    const task = this.tasks.get(taskId);
-    if (!task) {
-      return null;
-    }
-
-    // Simulate checking if task is complete
-    // In galactiq, this checks the actual service state
-    if (task.status.state === 'working') {
-      // Simulate completion check
-      const checkpoint = await this.checkpointStore.getLatest(task.contextId);
-      if (checkpoint && checkpoint.completed) {
-        this.updateTaskStatus(taskId, 'input-required', 'Task completed successfully');
-        return task;
-      }
-    }
-
-    return null;
-  }
-}
-
-/**
  * Main example function
  */
 async function statePersistenceExample() {
@@ -318,6 +86,9 @@ async function statePersistenceExample() {
     const agent = new StatefulAgent(provider, checkpointStore);
     const threadId = 'thread_001';
     const steps = createWorkflowSteps();
+
+    console.log(`\n🔄 [Workflow] Starting workflow for thread ${threadId}`);
+    console.log(`   Steps: ${steps.length}\n`);
 
     // Execute workflow
     const result1 = await agent.executeWorkflow(threadId, steps);

@@ -1,4 +1,4 @@
-import { createAIClient } from '../../clients/client-factory.js';
+import { ChatService } from '../../services/chat-service.js';
 import { config } from '../../config.js';
 
 /**
@@ -24,78 +24,51 @@ async function structuredOutputExample() {
     console.log('🤖 OpenAI - Structured JSON Output:');
     console.log('-'.repeat(60));
 
-    const openaiClient = createAIClient('openai');
-    const messages = [
-      {
-        role: 'system',
-        content:
-          'You are a data extraction assistant. Extract information and return it as valid JSON.',
-      },
-      {
-        role: 'user',
-        content: `Extract the following information from this text and return it as JSON:
-        - sender_name
-        - sender_role
-        - sender_company
-        - recipient_email
-        - date
-        - time
-        - subject
-        - attachment_count
-        - priority
-
-        Text: ${unstructuredText}
-
-        Return only valid JSON, no additional text.`,
-      },
+    const chatService = new ChatService('openai');
+    const schema = [
+      'sender_name',
+      'sender_role',
+      'sender_company',
+      'recipient_email',
+      'date',
+      'time',
+      'subject',
+      'attachment_count',
+      'priority',
     ];
 
-    const response = await openaiClient.chat(messages, {
-      response_format: { type: 'json_object' },
-      temperature: 0,
-    });
-
-    const jsonOutput = JSON.parse(response.choices[0].message.content);
-    console.log(JSON.stringify(jsonOutput, null, 2));
+    try {
+      const jsonOutput = await chatService.extractStructuredData(unstructuredText, schema);
+      console.log(JSON.stringify(jsonOutput, null, 2));
+    } catch (error) {
+      console.log('Error:', error.message);
+    }
     console.log('\n');
   }
 
-  // Claude with structured output (using system prompt)
+  // Claude with structured output
   if (config.claude.apiKey) {
     console.log('🤖 Claude - Structured JSON Output:');
     console.log('-'.repeat(60));
 
-    const claudeClient = createAIClient('claude');
-    const messages = [
-      {
-        role: 'user',
-        content: `Extract the following information from this text and return it as JSON:
-        - sender_name
-        - sender_role
-        - sender_company
-        - recipient_email
-        - date
-        - time
-        - subject
-        - attachment_count
-        - priority
-
-        Text: ${unstructuredText}
-
-        Return only valid JSON, no additional text.`,
-      },
+    const chatService = new ChatService('claude');
+    const schema = [
+      'sender_name',
+      'sender_role',
+      'sender_company',
+      'recipient_email',
+      'date',
+      'time',
+      'subject',
+      'attachment_count',
+      'priority',
     ];
 
-    const response = await claudeClient.chat(messages, {
-      temperature: 0,
-    });
-
-    const textContent = claudeClient.getTextContent(response);
     try {
-      const jsonOutput = JSON.parse(textContent);
+      const jsonOutput = await chatService.extractStructuredData(unstructuredText, schema);
       console.log(JSON.stringify(jsonOutput, null, 2));
-    } catch (e) {
-      console.log(textContent);
+    } catch (error) {
+      console.log('Error:', error.message);
     }
     console.log('\n');
   }
@@ -105,7 +78,7 @@ async function structuredOutputExample() {
   console.log('-'.repeat(60));
 
   if (config.openai.azureApiKey || config.openai.standardApiKey) {
-    const openaiClient = createAIClient('openai');
+    const chatService = new ChatService('openai');
     const productPrompt = `Generate a product catalog with 3 products. Each product should have:
     - name (string)
     - price (number)
@@ -116,13 +89,17 @@ async function structuredOutputExample() {
 
     Return as a JSON object with a "products" array.`;
 
-    const response = await openaiClient.chat([{ role: 'user', content: productPrompt }], {
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-    });
-
-    const catalog = JSON.parse(response.choices[0].message.content);
-    console.log(JSON.stringify(catalog, null, 2));
+    try {
+      const catalog = await chatService.getStructuredOutput(
+        [{ role: 'user', content: productPrompt }],
+        {
+          temperature: 0.7,
+        }
+      );
+      console.log(JSON.stringify(catalog, null, 2));
+    } catch (error) {
+      console.log('Error:', error.message);
+    }
   }
 }
 

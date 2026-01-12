@@ -1,4 +1,4 @@
-import { createAIClient } from '../../clients/client-factory.js';
+import { AssistantsService } from '../../services/assistants-service.js';
 import { config } from '../../config.js';
 
 /**
@@ -34,16 +34,14 @@ async function assistantsAPIExample() {
     console.log('   Assistants API requires OPENAI_API_KEY (not Azure OpenAI).\n');
   }
 
-  // Force use of standard OpenAI (not Azure) for Assistants API
-  // 'openai-standard' always uses StandardOpenAIClient which requires standardApiKey
-  const openaiClient = createAIClient('openai-standard');
+  const assistantsService = new AssistantsService();
 
   try {
     // Step 1: Create an Assistant
     console.log('1️⃣ Creating an Assistant...');
     console.log('-'.repeat(60));
 
-    const assistant = await openaiClient.createAssistant(
+    const assistant = await assistantsService.createAssistant(
       `You are a helpful coding assistant for a startup. 
       You help developers with:
       - Code reviews
@@ -82,7 +80,7 @@ async function assistantsAPIExample() {
     console.log('2️⃣ Creating a Thread...');
     console.log('-'.repeat(60));
 
-    const thread = await openaiClient.createThread();
+    const thread = await assistantsService.createThread();
     console.log(`✅ Thread created: ${thread.id}\n`);
 
     // Step 3: Add messages and run the assistant
@@ -93,43 +91,29 @@ async function assistantsAPIExample() {
     console.log(`👤 User: ${userMessage}\n`);
 
     // Add message to thread
-    await openaiClient.client.beta.threads.messages.create(thread.id, {
-      role: 'user',
-      content: userMessage,
-    });
+    await assistantsService.addMessage(thread.id, userMessage, 'user');
 
     // Run the assistant
-    let run = await openaiClient.client.beta.threads.runs.create(thread.id, {
-      assistant_id: assistant.id,
-    });
+    const response = await assistantsService.completeConversation(
+      thread.id,
+      assistant.id,
+      userMessage
+    );
 
-    console.log(`🔄 Run started: ${run.id}`);
-    console.log(`   Status: ${run.status}\n`);
+    console.log(`🔄 Run completed!\n`);
 
-    // Poll for completion
-    while (run.status === 'queued' || run.status === 'in_progress') {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      run = await openaiClient.client.beta.threads.runs.retrieve(thread.id, run.id);
-      console.log(`   Status: ${run.status}...`);
-    }
-
-    if (run.status === 'completed') {
+    if (response) {
       console.log('✅ Run completed!\n');
 
       // Retrieve messages
-      const messages = await openaiClient.client.beta.threads.messages.list(thread.id);
-      const assistantMessage = messages.data.find((msg) => msg.role === 'assistant');
+      const messages = await assistantsService.getMessages(thread.id);
+      const assistantMessage = messages.find((msg) => msg.role === 'assistant');
 
       if (assistantMessage) {
-        const content = assistantMessage.content[0];
-        if (content.type === 'text') {
-          console.log('🤖 Assistant Response:');
-          console.log('-'.repeat(60));
-          console.log(content.text.value);
-        }
+        console.log('🤖 Assistant Response:');
+        console.log('-'.repeat(60));
+        console.log(response);
       }
-    } else {
-      console.log(`❌ Run failed with status: ${run.status}`);
     }
 
     console.log('\n');
@@ -141,32 +125,16 @@ async function assistantsAPIExample() {
     const followUp = 'Can you provide a code example?';
     console.log(`👤 User: ${followUp}\n`);
 
-    await openaiClient.client.beta.threads.messages.create(thread.id, {
-      role: 'user',
-      content: followUp,
-    });
+    const followUpResponse = await assistantsService.completeConversation(
+      thread.id,
+      assistant.id,
+      followUp
+    );
 
-    run = await openaiClient.client.beta.threads.runs.create(thread.id, {
-      assistant_id: assistant.id,
-    });
-
-    while (run.status === 'queued' || run.status === 'in_progress') {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      run = await openaiClient.client.beta.threads.runs.retrieve(thread.id, run.id);
-    }
-
-    if (run.status === 'completed') {
-      const messages = await openaiClient.client.beta.threads.messages.list(thread.id);
-      const latestMessage = messages.data.find((msg) => msg.role === 'assistant');
-
-      if (latestMessage) {
-        const content = latestMessage.content[0];
-        if (content.type === 'text') {
-          console.log('🤖 Assistant Response:');
-          console.log('-'.repeat(60));
-          console.log(content.text.value.substring(0, 300) + '...');
-        }
-      }
+    if (followUpResponse) {
+      console.log('🤖 Assistant Response:');
+      console.log('-'.repeat(60));
+      console.log(followUpResponse.substring(0, 300) + '...');
     }
 
     console.log('\n');
@@ -175,9 +143,9 @@ async function assistantsAPIExample() {
     console.log('5️⃣ Thread History:');
     console.log('-'.repeat(60));
 
-    const allMessages = await openaiClient.client.beta.threads.messages.list(thread.id);
-    console.log(`Total messages in thread: ${allMessages.data.length}`);
-    allMessages.data.forEach((msg, idx) => {
+    const allMessages = await assistantsService.getMessages(thread.id);
+    console.log(`Total messages in thread: ${allMessages.length}`);
+    allMessages.forEach((msg, idx) => {
       console.log(`\n${idx + 1}. ${msg.role.toUpperCase()}:`);
       if (msg.content[0].type === 'text') {
         console.log(`   ${msg.content[0].text.value.substring(0, 100)}...`);

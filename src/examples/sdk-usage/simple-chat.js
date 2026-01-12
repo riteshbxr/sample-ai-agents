@@ -1,4 +1,4 @@
-import { createAIClient } from '../../clients/client-factory.js';
+import { ChatService } from '../../services/chat-service.js';
 import { config } from '../../config.js';
 
 /**
@@ -10,7 +10,7 @@ async function simpleChatExample() {
   // Example with OpenAI/Azure OpenAI
   if (config.openai.azureApiKey || config.openai.standardApiKey) {
     console.log('Using OpenAI...');
-    const openaiClient = createAIClient('openai');
+    const chatService = new ChatService('openai');
 
     const messages = [
       {
@@ -23,16 +23,16 @@ async function simpleChatExample() {
       },
     ];
 
-    const response = await openaiClient.chat(messages);
+    const response = await chatService.chat(messages);
     console.log('OpenAI Response:');
-    console.log(openaiClient.getTextContent(response));
+    console.log(response.content);
     console.log('\n');
   }
 
   // Example with Claude
   if (config.claude.apiKey) {
     console.log('Using Claude...');
-    const claudeClient = createAIClient('claude');
+    const chatService = new ChatService('claude');
 
     const messages = [
       {
@@ -41,10 +41,9 @@ async function simpleChatExample() {
       },
     ];
 
-    const response = await claudeClient.chat(messages);
-    const textContent = claudeClient.getTextContent(response);
+    const response = await chatService.chat(messages);
     console.log('Claude Response:');
-    console.log(textContent);
+    console.log(response.content);
     console.log('\n');
   }
 }

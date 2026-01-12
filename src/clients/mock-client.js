@@ -1,4 +1,5 @@
 import { AIClientInterface } from './ai-client-interface.js';
+import { PRICING } from '../utils/pricing.js';
 
 /**
  * Mock AI Client for Testing
@@ -16,6 +17,7 @@ export class MockAIClient extends AIClientInterface {
    * @param {Function} [config.chatStreamHandler] - Custom handler for chatStream() calls
    * @param {Function} [config.chatWithToolsHandler] - Custom handler for chatWithTools() calls
    * @param {Function} [config.getEmbeddingsHandler] - Custom handler for getEmbeddings() calls
+   * @param {Function} [config.analyzeImageHandler] - Custom handler for analyzeImage() calls
    * @param {boolean} [config.simulateErrors=false] - Whether to simulate errors
    * @param {string} [config.responseFormat='openai'] - Response format: 'openai' or 'claude'
    */
@@ -27,6 +29,7 @@ export class MockAIClient extends AIClientInterface {
     this.chatStreamHandler = config.chatStreamHandler;
     this.chatWithToolsHandler = config.chatWithToolsHandler;
     this.getEmbeddingsHandler = config.getEmbeddingsHandler;
+    this.analyzeImageHandler = config.analyzeImageHandler;
     this.simulateErrors = config.simulateErrors || false;
     this.responseFormat = config.responseFormat || 'openai';
     this.callHistory = []; // Track all method calls for testing
@@ -147,6 +150,219 @@ export class MockAIClient extends AIClientInterface {
       const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
       return vector.map((val) => val / magnitude);
     });
+  }
+
+  /**
+   * Analyze an image with a text prompt
+   * @param {string} imageBase64 - Base64 encoded image
+   * @param {string} prompt - Text prompt for analysis
+   * @param {Object} options - Additional options
+   * @returns {Promise<string>} Analysis result
+   */
+  async analyzeImage(imageBase64, prompt, options = {}) {
+    this.callHistory.push({
+      method: 'analyzeImage',
+      imageBase64,
+      prompt,
+      options,
+      timestamp: Date.now(),
+    });
+
+    if (this.simulateErrors) {
+      throw new Error('Mock error: Simulated vision error');
+    }
+
+    if (this.analyzeImageHandler) {
+      return await this.analyzeImageHandler(imageBase64, prompt, options);
+    }
+
+    // Default mock response
+    return 'This is a test image analysis result';
+  }
+
+  /**
+   * Create an assistant
+   * @param {string} instructions - Assistant instructions
+   * @param {Array} tools - Array of tool definitions
+   * @param {Object} [options={}] - Additional options
+   * @returns {Promise<Object>} Created assistant
+   */
+  async createAssistant(instructions, tools = [], options = {}) {
+    this.callHistory.push({
+      method: 'createAssistant',
+      instructions,
+      tools,
+      options,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `asst_${Date.now()}`,
+      object: 'assistant',
+      created_at: Math.floor(Date.now() / 1000),
+      name: options.name || 'Mock Assistant',
+      description: null,
+      model: options.model || this.model,
+      instructions,
+      tools,
+      tool_resources: null,
+      metadata: {},
+      temperature: options.temperature || 1,
+      top_p: options.top_p || 1,
+    };
+  }
+
+  /**
+   * Create a thread
+   * @returns {Promise<Object>} Created thread
+   */
+  async createThread() {
+    this.callHistory.push({
+      method: 'createThread',
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `thread_${Date.now()}`,
+      object: 'thread',
+      created_at: Math.floor(Date.now() / 1000),
+      metadata: {},
+    };
+  }
+
+  /**
+   * Add message to thread
+   * @param {string} threadId - Thread ID
+   * @param {string} content - Message content
+   * @param {string} [role='user'] - Message role
+   * @returns {Promise<Object>} Created message
+   */
+  async addMessage(threadId, content, role = 'user') {
+    this.callHistory.push({
+      method: 'addMessage',
+      threadId,
+      content,
+      role,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `msg_${Date.now()}`,
+      object: 'thread.message',
+      created_at: Math.floor(Date.now() / 1000),
+      thread_id: threadId,
+      role,
+      content: [
+        {
+          type: 'text',
+          text: {
+            value: content,
+            annotations: [],
+          },
+        },
+      ],
+      assistant_id: null,
+      run_id: null,
+      metadata: {},
+    };
+  }
+
+  /**
+   * Get messages from thread
+   * @param {string} threadId - Thread ID
+   * @param {Object} [options={}] - Options (limit, order, etc.)
+   * @returns {Promise<Array>} Array of messages
+   */
+  async getMessages(threadId, options = {}) {
+    this.callHistory.push({
+      method: 'getMessages',
+      threadId,
+      options,
+      timestamp: Date.now(),
+    });
+
+    // Return empty array by default, can be customized with handlers
+    return [];
+  }
+
+  /**
+   * Run assistant on thread
+   * @param {string} threadId - Thread ID
+   * @param {string} assistantId - Assistant ID
+   * @param {Object} [options={}] - Additional options
+   * @returns {Promise<Object>} Run object
+   */
+  async runAssistant(threadId, assistantId, options = {}) {
+    this.callHistory.push({
+      method: 'runAssistant',
+      threadId,
+      assistantId,
+      options,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: `run_${Date.now()}`,
+      object: 'thread.run',
+      created_at: Math.floor(Date.now() / 1000),
+      thread_id: threadId,
+      assistant_id: assistantId,
+      status: 'completed',
+      started_at: Math.floor(Date.now() / 1000),
+      expires_at: null,
+      cancelled_at: null,
+      failed_at: null,
+      completed_at: Math.floor(Date.now() / 1000),
+      last_error: null,
+      model: this.model,
+      instructions: null,
+      tools: [],
+      metadata: {},
+      usage: {
+        prompt_tokens: 10,
+        completion_tokens: 20,
+        total_tokens: 30,
+      },
+    };
+  }
+
+  /**
+   * Retrieve run status
+   * @param {string} threadId - Thread ID
+   * @param {string} runId - Run ID
+   * @returns {Promise<Object>} Run object with current status
+   */
+  async retrieveRun(threadId, runId) {
+    this.callHistory.push({
+      method: 'retrieveRun',
+      threadId,
+      runId,
+      timestamp: Date.now(),
+    });
+
+    return {
+      id: runId,
+      object: 'thread.run',
+      created_at: Math.floor(Date.now() / 1000),
+      thread_id: threadId,
+      assistant_id: 'asst_mock',
+      status: 'completed',
+      started_at: Math.floor(Date.now() / 1000),
+      expires_at: null,
+      cancelled_at: null,
+      failed_at: null,
+      completed_at: Math.floor(Date.now() / 1000),
+      last_error: null,
+      model: this.model,
+      instructions: null,
+      tools: [],
+      metadata: {},
+      usage: {
+        prompt_tokens: 10,
+        completion_tokens: 20,
+        total_tokens: 30,
+      },
+    };
   }
 
   /**
@@ -360,6 +576,89 @@ export class MockAIClient extends AIClientInterface {
     this.chatStreamHandler = null;
     this.chatWithToolsHandler = null;
     this.getEmbeddingsHandler = null;
+    this.analyzeImageHandler = null;
     this.defaultResponse = 'Mock response';
+  }
+
+  /**
+   * Calculate cost for mock response
+   * Supports both OpenAI and Claude response formats
+   * @param {Object} response - API response with usage information
+   * @param {string} [model] - Optional model name (defaults to client model)
+   * @returns {Object} Cost calculation result with inputTokens, outputTokens, totalTokens, inputCost, outputCost, totalCost
+   */
+  calculateCost(response, model = null) {
+    const modelName = model || this.model;
+    let usage = null;
+
+    // Extract usage based on response format
+    if (this.responseFormat === 'claude') {
+      // Claude format
+      usage = response.usage || {
+        input_tokens: response.usage?.input_tokens || 0,
+        output_tokens: response.usage?.output_tokens || 0,
+      };
+    } else {
+      // OpenAI format (default)
+      usage = response.usage || {
+        prompt_tokens: response.usage?.prompt_tokens || 0,
+        completion_tokens: response.usage?.completion_tokens || 0,
+        total_tokens: response.usage?.total_tokens || 0,
+      };
+    }
+
+    if (!usage || (!usage.prompt_tokens && !usage.input_tokens)) {
+      return {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        inputCost: 0,
+        outputCost: 0,
+        totalCost: 0,
+      };
+    }
+
+    // Determine provider based on response format or model
+    const isClaude = this.responseFormat === 'claude' || modelName.includes('claude');
+    const pricingSource = isClaude ? PRICING.claude : PRICING.openai;
+
+    // Get pricing - use mock pricing as fallback
+    const defaultPricing = pricingSource['mock-model'] || { input: 0.1, output: 0.1 };
+    const pricing = pricingSource[modelName] || defaultPricing;
+
+    // Calculate costs based on format
+    if (isClaude) {
+      const inputTokens = usage.input_tokens || 0;
+      const outputTokens = usage.output_tokens || 0;
+      const inputCost = (inputTokens / 1_000_000) * pricing.input;
+      const outputCost = (outputTokens / 1_000_000) * pricing.output;
+      const totalCost = inputCost + outputCost;
+
+      return {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        inputCost,
+        outputCost,
+        totalCost,
+      };
+    } else {
+      // OpenAI format
+      const inputTokens = usage.prompt_tokens || 0;
+      const outputTokens = usage.completion_tokens || 0;
+      const totalTokens = usage.total_tokens || inputTokens + outputTokens;
+      const inputCost = (inputTokens / 1_000_000) * pricing.input;
+      const outputCost = (outputTokens / 1_000_000) * pricing.output;
+      const totalCost = inputCost + outputCost;
+
+      return {
+        inputTokens,
+        outputTokens,
+        totalTokens,
+        inputCost,
+        outputCost,
+        totalCost,
+      };
+    }
   }
 }

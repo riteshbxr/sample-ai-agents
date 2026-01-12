@@ -109,7 +109,8 @@ ANTHROPIC_API_KEY=your_key_here
 ```
 src/
 ├── clients/          # API client wrappers
-│   ├── openai-client.js
+│   ├── azure-openai-client.js
+│   ├── standard-openai-client.js
 │   └── claude-client.js
 ├── agents/           # Agent implementations
 │   ├── function-calling-agent.js
@@ -159,9 +160,13 @@ Chat completions are the foundation of LLM interactions. You send messages and r
 **File:** `src/examples/sdk-usage/simple-chat.js`
 
 ```javascript
-import { OpenAIClient } from '../clients/openai-client.js';
+import { AzureOpenAIClient } from '../clients/azure-openai-client.js';
+// or
+import { StandardOpenAIClient } from '../clients/standard-openai-client.js';
 
-const client = new OpenAIClient();
+const client = new AzureOpenAIClient();
+// or
+const client = new StandardOpenAIClient();
 const response = await client.chat([
   { role: 'user', content: 'Explain quantum computing in simple terms' }
 ]);

@@ -1,6 +1,7 @@
 import { estimateTokens } from '../../../utils/token-utils.js';
-import { PRICING } from './pricing.js';
+import { PRICING } from '../../../utils/pricing.js';
 import { config } from '../../../config.js';
+import { createAIClient } from '../../../clients/client-factory.js';
 
 /**
  * Cost Tracker
@@ -20,97 +21,146 @@ export class CostTracker {
   }
 
   /**
-   * Calculate cost for OpenAI response
-   */
-  calculateOpenAICost(response, model) {
-    const usage = response.usage;
-    if (!usage) return 0;
-
-    const defaultModel = config.openai.model;
-    const pricing =
-      PRICING.openai[model] ||
-      PRICING.openai[defaultModel] ||
-      PRICING.openai['gpt-4-turbo-preview'];
-    const inputCost = (usage.prompt_tokens / 1_000_000) * pricing.input;
-    const outputCost = (usage.completion_tokens / 1_000_000) * pricing.output;
-    const totalCost = inputCost + outputCost;
-
-    return {
-      inputTokens: usage.prompt_tokens,
-      outputTokens: usage.completion_tokens,
-      totalTokens: usage.total_tokens,
-      inputCost,
-      outputCost,
-      totalCost,
-    };
-  }
-
-  /**
-   * Calculate cost for Claude response
-   */
-  calculateClaudeCost(response, model) {
-    const usage = response.usage;
-    if (!usage) return 0;
-
-    const defaultModel = config.claude.model;
-    const pricing =
-      PRICING.claude[model] ||
-      PRICING.claude[defaultModel] ||
-      PRICING.claude['claude-sonnet-4-5-20250929'];
-    const inputCost = (usage.input_tokens / 1_000_000) * pricing.input;
-    const outputCost = (usage.output_tokens / 1_000_000) * pricing.output;
-    const totalCost = inputCost + outputCost;
-
-    return {
-      inputTokens: usage.input_tokens,
-      outputTokens: usage.output_tokens,
-      totalTokens: usage.input_tokens + usage.output_tokens,
-      inputCost,
-      outputCost,
-      totalCost,
-    };
-  }
-
-  /**
    * Track a request
+   * @param {string} provider - Provider name ('openai', 'claude', etc.)
+   * @param {string} model - Model name
+   * @param {Object} costData - Cost data (may include tokens, costs, or response object)
+   * @param {Object} [metadata={}] - Additional metadata
+   * @returns {Object} Tracked request object
    */
   trackRequest(provider, model, costData, metadata = {}) {
     // Calculate cost if not provided
     let totalCost = costData.totalCost;
-    if (totalCost === undefined || totalCost === null) {
-      // Calculate cost from token counts
-      const promptTokens = costData.promptTokens || costData.inputTokens || 0;
-      const completionTokens = costData.completionTokens || costData.outputTokens || 0;
+    let finalCostData = { ...costData };
 
-      if (provider === 'openai') {
-        const defaultModel = config.openai.model;
-        const pricing =
-          PRICING.openai[model] ||
-          PRICING.openai[defaultModel] ||
-          PRICING.openai['gpt-4-turbo-preview'];
-        const inputCost = (promptTokens / 1_000_000) * pricing.input;
-        const outputCost = (completionTokens / 1_000_000) * pricing.output;
-        totalCost = inputCost + outputCost;
-      } else if (provider === 'claude') {
-        const defaultModel = config.claude.model;
-        const pricing =
-          PRICING.claude[model] ||
-          PRICING.claude[defaultModel] ||
-          PRICING.claude['claude-sonnet-4-5-20250929'];
-        const inputCost = (promptTokens / 1_000_000) * pricing.input;
-        const outputCost = (completionTokens / 1_000_000) * pricing.output;
-        totalCost = inputCost + outputCost;
-      } else {
-        totalCost = 0;
+    if (totalCost === undefined || totalCost === null) {
+      // Try to create a client based on provider and use its calculateCost method
+      let client = null;
+      try {
+        // Map provider to client factory provider
+        let factoryProvider = provider;
+        if (provider === 'openai') {
+          // Use 'openai' which will route based on config
+          factoryProvider = 'openai';
+        } else if (provider === 'azure-openai' || provider === 'openai-standard') {
+          factoryProvider = provider;
+        } else if (provider === 'claude') {
+          factoryProvider = 'claude';
+        } else if (provider === 'mock') {
+          factoryProvider = 'mock';
+        }
+
+        // Create client with the model
+        client = createAIClient(factoryProvider, model);
+      } catch {
+        // If client creation fails (e.g., missing API keys), fall back to manual calculation
+        client = null;
       }
+
+      // If client was created and has calculateCost method, use it
+      if (client && typeof client.calculateCost === 'function') {
+        // Check if costData is a response object with usage
+        if (costData.usage) {
+          // costData is already a response object
+          finalCostData = client.calculateCost(costData, model);
+          totalCost = finalCostData.totalCost;
+        } else {
+          // Construct a mock response object with usage from token counts
+          const promptTokens = costData.promptTokens || costData.inputTokens || 0;
+          const completionTokens = costData.completionTokens || costData.outputTokens || 0;
+
+          // Determine response format based on provider
+          const isClaude = provider === 'claude';
+
+          const mockResponse = {
+            usage: isClaude
+              ? {
+                  input_tokens: promptTokens,
+                  output_tokens: completionTokens,
+                }
+              : {
+                  prompt_tokens: promptTokens,
+                  completion_tokens: completionTokens,
+                  total_tokens: promptTokens + completionTokens,
+                },
+          };
+
+          finalCostData = client.calculateCost(mockResponse, model);
+          totalCost = finalCostData.totalCost;
+        }
+      } else {
+        // Fallback to manual calculation if client creation failed or doesn't have calculateCost
+        const promptTokens = costData.promptTokens || costData.inputTokens || 0;
+        const completionTokens = costData.completionTokens || costData.outputTokens || 0;
+
+        if (
+          provider === 'openai' ||
+          provider === 'azure-openai' ||
+          provider === 'openai-standard'
+        ) {
+          const defaultModel = config.openai.model;
+          const pricing =
+            PRICING.openai[model] ||
+            PRICING.openai[defaultModel] ||
+            PRICING.openai['gpt-4-turbo-preview'];
+          const inputCost = (promptTokens / 1_000_000) * pricing.input;
+          const outputCost = (completionTokens / 1_000_000) * pricing.output;
+          totalCost = inputCost + outputCost;
+
+          finalCostData = {
+            ...costData,
+            inputTokens: promptTokens,
+            outputTokens: completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            inputCost,
+            outputCost,
+            totalCost,
+          };
+        } else if (provider === 'claude') {
+          const defaultModel = config.claude.model;
+          const pricing =
+            PRICING.claude[model] ||
+            PRICING.claude[defaultModel] ||
+            PRICING.claude['claude-sonnet-4-5-20250929'];
+          const inputCost = (promptTokens / 1_000_000) * pricing.input;
+          const outputCost = (completionTokens / 1_000_000) * pricing.output;
+          totalCost = inputCost + outputCost;
+
+          finalCostData = {
+            ...costData,
+            inputTokens: promptTokens,
+            outputTokens: completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            inputCost,
+            outputCost,
+            totalCost,
+          };
+        } else {
+          totalCost = 0;
+          finalCostData = {
+            ...costData,
+            inputTokens: promptTokens,
+            outputTokens: completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            inputCost: 0,
+            outputCost: 0,
+            totalCost: 0,
+          };
+        }
+      }
+    } else {
+      // totalCost already provided, ensure costData structure is complete
+      finalCostData = {
+        ...costData,
+        totalCost,
+      };
     }
 
     const request = {
       timestamp: new Date().toISOString(),
       provider,
       model,
-      ...costData,
-      totalCost,
+      ...finalCostData,
       ...metadata,
     };
 
