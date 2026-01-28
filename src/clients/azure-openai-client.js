@@ -1,16 +1,15 @@
 import { OpenAI } from 'openai';
 import { config } from '../config.js';
-import { AIClientInterface } from './ai-client-interface.js';
-import { PRICING } from '../utils/pricing.js';
+import { BaseOpenAIClient } from './base-openai-client.js';
 
 /**
  * Azure OpenAI Client
  * Implements AIClientInterface for consistent API across providers
  * This client is specifically for Azure OpenAI service
  *
- * @extends {AIClientInterface}
+ * @extends {BaseOpenAIClient}
  */
-export class AzureOpenAIClient extends AIClientInterface {
+export class AzureOpenAIClient extends BaseOpenAIClient {
   /**
    * Create Azure OpenAI client instance
    * @param {string} [model] - Optional model name (overrides config)
@@ -25,7 +24,7 @@ export class AzureOpenAIClient extends AIClientInterface {
 
     // Configure for Azure OpenAI if endpoint is provided
     const clientConfig = {
-      apiKey: apiKey,
+      apiKey,
     };
 
     if (config.openai.azure.enabled) {
@@ -134,36 +133,6 @@ export class AzureOpenAIClient extends AIClientInterface {
     });
 
     return response;
-  }
-
-  /**
-   * Chat with tools - Unified interface method
-   * Wraps chatWithFunctions for consistency with Claude client
-   * @param {Array} messages - Array of message objects
-   * @param {Array} tools - Array of tool/function definitions
-   * @param {Object} options - Additional options
-   * @returns {Promise<Object>} Response with tool calls
-   */
-  async chatWithTools(messages, tools, options = {}) {
-    // Convert tools to OpenAI function format if needed
-    const functions = tools.map((tool) => {
-      // If already in OpenAI format, use as-is
-      if (tool.function) {
-        return tool.function;
-      }
-      // If in Claude format, convert
-      if (tool.input_schema) {
-        return {
-          name: tool.name,
-          description: tool.description,
-          parameters: tool.input_schema,
-        };
-      }
-      // Otherwise assume it's already a function definition
-      return tool;
-    });
-
-    return this.chatWithFunctions(messages, functions, options);
   }
 
   /**
@@ -299,7 +268,7 @@ export class AzureOpenAIClient extends AIClientInterface {
 
       // Create a separate client for embeddings with the embedding deployment
       const endpoint = config.openai.azure.endpoint.replace(/\/$/, '');
-      const embeddingDeployment = config.openai.azure.embeddingDeployment;
+      const { embeddingDeployment } = config.openai.azure;
 
       embeddingsClient = new OpenAI({
         apiKey: config.openai.azureApiKey || config.openai.standardApiKey,
@@ -318,45 +287,6 @@ export class AzureOpenAIClient extends AIClientInterface {
       input: Array.isArray(input) ? input : [input],
     });
     return response.data.map((item) => item.embedding);
-  }
-
-  /**
-   * Get text content from OpenAI response
-   * @param {Object} response - OpenAI API response
-   * @returns {string} Text content
-   */
-  getTextContent(response) {
-    // OpenAI response format: response.choices[0].message.content
-    if (response.choices && response.choices[0] && response.choices[0].message) {
-      return response.choices[0].message.content || '';
-    }
-    return '';
-  }
-
-  /**
-   * Check if OpenAI response contains tool calls
-   * @param {Object} response - OpenAI API response
-   * @returns {boolean} True if response contains tool calls
-   */
-  hasToolUse(response) {
-    if (response.choices && response.choices[0] && response.choices[0].message) {
-      return !!(
-        response.choices[0].message.tool_calls && response.choices[0].message.tool_calls.length > 0
-      );
-    }
-    return false;
-  }
-
-  /**
-   * Get tool call blocks from OpenAI response
-   * @param {Object} response - OpenAI API response
-   * @returns {Array} Array of tool call objects
-   */
-  getToolUseBlocks(response) {
-    if (response.choices && response.choices[0] && response.choices[0].message) {
-      return response.choices[0].message.tool_calls || [];
-    }
-    return [];
   }
 
   /**
@@ -394,45 +324,5 @@ export class AzureOpenAIClient extends AIClientInterface {
     });
 
     return response.choices[0].message.content;
-  }
-
-  /**
-   * Calculate cost for OpenAI response
-   * @param {Object} response - OpenAI API response with usage information
-   * @param {string} [model] - Optional model name (defaults to client model)
-   * @returns {Object} Cost calculation result with inputTokens, outputTokens, totalTokens, inputCost, outputCost, totalCost
-   */
-  calculateCost(response, model = null) {
-    const usage = response.usage;
-    if (!usage) {
-      return {
-        inputTokens: 0,
-        outputTokens: 0,
-        totalTokens: 0,
-        inputCost: 0,
-        outputCost: 0,
-        totalCost: 0,
-      };
-    }
-
-    const modelName = model || this.model;
-    const defaultModel = config.openai.model;
-    const pricing =
-      PRICING.openai[modelName] ||
-      PRICING.openai[defaultModel] ||
-      PRICING.openai['gpt-4-turbo-preview'];
-
-    const inputCost = (usage.prompt_tokens / 1_000_000) * pricing.input;
-    const outputCost = (usage.completion_tokens / 1_000_000) * pricing.output;
-    const totalCost = inputCost + outputCost;
-
-    return {
-      inputTokens: usage.prompt_tokens,
-      outputTokens: usage.completion_tokens,
-      totalTokens: usage.total_tokens,
-      inputCost,
-      outputCost,
-      totalCost,
-    };
   }
 }

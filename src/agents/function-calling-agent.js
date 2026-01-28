@@ -86,7 +86,7 @@ export class FunctionCallingAgent {
    * @returns {Promise<string>} Agent's response
    */
   async chat(userMessage, options = {}) {
-    const client = this.client;
+    const { client } = this;
     const maxIterations = options.maxToolCallIterations || 50;
 
     this.conversationHistory.push({
@@ -100,7 +100,7 @@ export class FunctionCallingAgent {
       iterationCount++;
 
       // Use unified interface method
-      let response = await client.chatWithTools(
+      const response = await client.chatWithTools(
         this.conversationHistory,
         this.functionDefinitions,
         options

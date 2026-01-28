@@ -30,7 +30,7 @@ export class CostTracker {
    */
   trackRequest(provider, model, costData, metadata = {}) {
     // Calculate cost if not provided
-    let totalCost = costData.totalCost;
+    let { totalCost } = costData;
     let finalCostData = { ...costData };
 
     if (totalCost === undefined || totalCost === null) {

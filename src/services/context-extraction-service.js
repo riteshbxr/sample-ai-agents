@@ -26,7 +26,7 @@ export class ContextExtractionService {
     } = options;
 
     // Step 1: Filter messages (remove AI messages with tool calls if needed)
-    let filteredMessages = this.filterMessages(chatHistory, {
+    const filteredMessages = this.filterMessages(chatHistory, {
       includeSystemMessages,
       filterToolCalls,
     });
@@ -142,7 +142,7 @@ Return a JSON object with an "indices" array of message indices that are relevan
         .map((idx) => messages[idx]);
 
       // Limit by max length
-      let combined = this.combineMessages(relevantMessages);
+      const combined = this.combineMessages(relevantMessages);
       if (combined.length > maxLength) {
         // Truncate from the end, keeping most recent messages
         const truncated = [];

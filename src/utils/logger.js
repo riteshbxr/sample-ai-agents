@@ -7,13 +7,23 @@
 
 import { config } from '../config.js';
 
-const LOG_LEVELS = {
+/** @enum {number} */
+const LOG_LEVELS = Object.freeze({
   DEBUG: 0,
   INFO: 1,
   WARN: 2,
   ERROR: 3,
   NONE: 4,
-};
+});
+
+/** @type {Map<string, number>} */
+const LEVEL_MAP = new Map([
+  ['DEBUG', LOG_LEVELS.DEBUG],
+  ['INFO', LOG_LEVELS.INFO],
+  ['WARN', LOG_LEVELS.WARN],
+  ['ERROR', LOG_LEVELS.ERROR],
+  ['NONE', LOG_LEVELS.NONE],
+]);
 
 /**
  * Get log level from environment or default to INFO
@@ -21,12 +31,7 @@ const LOG_LEVELS = {
  */
 function getLogLevel() {
   const envLevel = config.logger.level?.toUpperCase();
-  if (envLevel === 'DEBUG') return LOG_LEVELS.DEBUG;
-  if (envLevel === 'INFO') return LOG_LEVELS.INFO;
-  if (envLevel === 'WARN') return LOG_LEVELS.WARN;
-  if (envLevel === 'ERROR') return LOG_LEVELS.ERROR;
-  if (envLevel === 'NONE') return LOG_LEVELS.NONE;
-  return LOG_LEVELS.INFO; // Default
+  return LEVEL_MAP.get(envLevel) ?? LOG_LEVELS.INFO;
 }
 
 /**

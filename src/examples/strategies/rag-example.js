@@ -51,7 +51,7 @@ async function ragExample() {
 
     const answer = await ragAgent.query(question);
     console.log(answer);
-    console.log('\n' + '-'.repeat(60) + '\n');
+    console.log(`\n${'-'.repeat(60)}\n`);
   }
 
   // Streaming example
@@ -63,7 +63,7 @@ async function ragExample() {
     process.stdout.write(chunk);
   });
 
-  console.log('\n\n' + '='.repeat(60));
+  console.log(`\n\n${'='.repeat(60)}`);
 
   // Get stats
   const stats = await ragAgent.getStats();

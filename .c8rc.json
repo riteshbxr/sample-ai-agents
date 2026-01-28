@@ -1,0 +1,19 @@
+{
+  "all": true,
+  "include": ["src/**/*.js"],
+  "exclude": [
+    "src/examples/**",
+    "src/menu.js",
+    "**/*.test.js",
+    "**/node_modules/**"
+  ],
+  "reporter": ["text", "html", "lcov"],
+  "report-dir": "coverage",
+  "temp-directory": ".c8_output",
+  "clean": true,
+  "skip-full": false,
+  "check-coverage": false,
+  "lines": 60,
+  "functions": 60,
+  "branches": 50
+}

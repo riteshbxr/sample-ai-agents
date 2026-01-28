@@ -294,7 +294,7 @@ Use these tools when appropriate to help the user. Always explain what you're do
     try {
       let fullResponse = '';
       let needsFunctionCall = true;
-      let maxIterations = 5; // Prevent infinite loops
+      const maxIterations = 5; // Prevent infinite loops
       let iteration = 0;
 
       while (needsFunctionCall && iteration < maxIterations) {

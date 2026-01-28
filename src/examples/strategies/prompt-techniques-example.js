@@ -1,7 +1,7 @@
 import { PromptService } from '../../services/prompt-service.js';
 import { ChatService } from '../../services/chat-service.js';
 import { createAIClient } from '../../clients/client-factory.js';
-import { config, providerUtils } from '../../config.js';
+import { providerUtils } from '../../config.js';
 
 /**
  * Prompt Engineering Techniques Example
@@ -183,10 +183,10 @@ List 5 features.`;
     const results = await promptService.promptChain(chain);
 
     console.log('Step 1 - Generated Ideas:');
-    console.log(results[0].substring(0, 200) + '...\n');
+    console.log(`${results[0].substring(0, 200)}...\n`);
 
     console.log('Step 2 - Evaluation:');
-    console.log(results[1].substring(0, 200) + '...');
+    console.log(`${results[1].substring(0, 200)}...`);
   }
 
   console.log('\n');
@@ -237,7 +237,7 @@ List 5 features.`;
     const lowTemp = await openaiClient.chat([{ role: 'user', content: prompt }], {
       temperature: 0.2,
     });
-    console.log(lowTemp.choices[0].message.content.substring(0, 150) + '\n');
+    console.log(`${lowTemp.choices[0].message.content.substring(0, 150)}\n`);
 
     console.log('High temperature (1.0) - More creative:');
     const highTemp = await openaiClient.chat([{ role: 'user', content: prompt }], {

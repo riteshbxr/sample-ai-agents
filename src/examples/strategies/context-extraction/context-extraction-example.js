@@ -28,7 +28,7 @@ async function extractRelevantContext(chatHistory, goal, options = {}, extractor
   console.log(`   Chat history length: ${chatHistory.length} messages\n`);
 
   // Step 1: Filter messages (remove AI messages with tool calls if needed)
-  let filteredMessages = extractor.filterMessages(chatHistory, {
+  const filteredMessages = extractor.filterMessages(chatHistory, {
     includeSystemMessages,
     filterToolCalls,
   });
@@ -141,7 +141,7 @@ Return a JSON array of message indices that are relevant to the goal. Example: [
       .map((idx) => messages[idx]);
 
     // Limit by max length
-    let combined = combineMessages(relevantMessages, extractor);
+    const combined = combineMessages(relevantMessages, extractor);
     if (combined.length > maxLength) {
       // Truncate from the end, keeping most recent messages
       const truncated = [];

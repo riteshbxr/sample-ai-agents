@@ -109,7 +109,7 @@ export class MultiAgentSystem {
     return {
       research: researchResults,
       draft: article,
-      review: review,
+      review,
       final: finalArticle,
     };
   }

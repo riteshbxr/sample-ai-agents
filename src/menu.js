@@ -6,11 +6,56 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const examples = {
-  'sdk-usage': {
-    title: '📦 Direct SDK Usage Examples',
+// =============================================================================
+// MENU DATA STRUCTURE
+// =============================================================================
+// Categories are displayed in the order they appear here
+
+const categories = [
+  {
+    id: 'beginner',
+    title: '🎓 Beginner Tutorials (Start Here!)',
+    description: 'Learn AI basics step by step',
     examples: [
-      // Basic SDK Features
+      {
+        name: 'Hello AI',
+        file: '01-hello-ai.js',
+        description: 'Your first AI conversation - the "Hello World" of AI',
+      },
+      {
+        name: 'Chat with Context',
+        file: '02-chat-with-context.js',
+        description: 'Learn system prompts, conversation history, and temperature',
+      },
+    ],
+  },
+  {
+    id: 'customer-experience',
+    title: '🛍️ Customer Experience',
+    description: 'Build AI for customer-facing applications',
+    examples: [
+      {
+        name: 'Customer Support Bot',
+        file: 'customer-support-bot.js',
+        description: 'Complete support chatbot with product knowledge and order lookup',
+      },
+      {
+        name: 'FAQ Bot',
+        file: 'faq-bot.js',
+        description: 'Answer questions from your knowledge base',
+      },
+      {
+        name: 'Sentiment Analysis',
+        file: 'sentiment-analysis.js',
+        description: 'Analyze customer feedback emotions and urgency',
+      },
+    ],
+  },
+  {
+    id: 'sdk-usage',
+    title: '📦 SDK Usage',
+    description: 'Direct API usage examples',
+    examples: [
       {
         name: 'Simple Chat',
         file: 'simple-chat.js',
@@ -21,7 +66,11 @@ const examples = {
         file: 'interactive-chat.js',
         description: 'Full conversational interface with back-and-forth interaction',
       },
-      { name: 'Streaming', file: 'streaming-example.js', description: 'Real-time token streaming' },
+      {
+        name: 'Streaming',
+        file: 'streaming-example.js',
+        description: 'Real-time token streaming',
+      },
       {
         name: 'Structured Output',
         file: 'structured-output-example.js',
@@ -32,7 +81,6 @@ const examples = {
         file: 'multi-model-example.js',
         description: 'Compare outputs from different models',
       },
-      // Advanced SDK Features
       {
         name: 'Assistants API (OpenAI)',
         file: 'assistants-api-example.js',
@@ -41,35 +89,35 @@ const examples = {
       {
         name: 'Claude Assistants-like',
         file: 'claude-assistants-example.js',
-        description: 'Claude persistent conversations with tool use (Messages API)',
+        description: 'Claude persistent conversations with tool use',
       },
       {
         name: 'Embeddings',
         file: 'embeddings-example.js',
-        description: 'Standalone embeddings for similarity, clustering, classification',
+        description: 'Embeddings for similarity, clustering, classification',
       },
       {
         name: 'Vision/Image Analysis',
         file: 'vision-example.js',
         description: 'Image understanding and analysis capabilities',
       },
-      // Third-Party SDKs
       {
         name: 'LangGraph',
         file: 'langgraph-example.js',
-        description: 'Stateful, multi-actor agent workflows with LangGraph SDK',
+        description: 'Stateful, multi-actor agent workflows',
       },
       {
         name: 'Langfuse',
         file: 'langfuse-example.js',
-        description: 'LLM observability, tracing, and monitoring with Langfuse SDK',
+        description: 'LLM observability, tracing, and monitoring',
       },
     ],
   },
-  strategies: {
-    title: '🎯 Higher-Level Strategy Examples',
+  {
+    id: 'strategies',
+    title: '🤖 Agent Patterns',
+    description: 'AI agent architectures and patterns',
     examples: [
-      // Agent Patterns
       {
         name: 'Function Calling Agent',
         file: 'agent-example.js',
@@ -78,12 +126,32 @@ const examples = {
       {
         name: 'ReAct Agent',
         file: 'react-agent/react-agent-example.js',
-        description: 'ReAct (Reasoning + Acting) pattern from galactiq',
+        description: 'ReAct (Reasoning + Acting) pattern',
+      },
+      {
+        name: 'Planning Agent',
+        file: 'planning-agent/planning-agent-example.js',
+        description: 'Plan-and-Solve pattern for complex tasks',
+      },
+      {
+        name: 'Self-Reflection Agent',
+        file: 'self-reflection/self-reflection-example.js',
+        description: 'Agent that critiques and improves its own output',
+      },
+      {
+        name: 'Autonomous Agent',
+        file: 'autonomous-agent/autonomous-agent-example.js',
+        description: 'Goal-driven autonomous agent with memory',
+      },
+      {
+        name: 'Supervisor Agent',
+        file: 'supervisor-agent/supervisor-agent-example.js',
+        description: 'Hierarchical multi-agent with supervisor pattern',
       },
       {
         name: 'Agent Orchestration',
         file: 'agent-orchestration/agent-orchestration-example.js',
-        description: 'Intelligent tool routing/dispatching pattern from galactiq',
+        description: 'Intelligent tool routing/dispatching pattern',
       },
       {
         name: 'RAG',
@@ -91,12 +159,17 @@ const examples = {
         description: 'Retrieval-Augmented Generation with vector search',
       },
       {
+        name: 'Browser Search Agent',
+        file: 'browser-search/browser-search-example.js',
+        description: 'Web search and page reading with MCP-style tools',
+      },
+      {
         name: 'Multi-Agent Collaboration',
         file: 'multi-agent/multi-agent-example.js',
         description: 'Multiple AI agents working together',
       },
       {
-        name: 'Agent-to-Agent (A2A) Communication',
+        name: 'Agent-to-Agent (A2A)',
         file: 'a2a-agent/a2a-agent-example.js',
         description: 'Direct agent-to-agent messaging and negotiation',
       },
@@ -105,7 +178,28 @@ const examples = {
         file: 'workflow/workflow-example.js',
         description: 'Multi-step autonomous workflows',
       },
-      // Production Infrastructure
+    ],
+  },
+  {
+    id: 'strategies',
+    title: '🛡️ Production Patterns',
+    description: 'Patterns for production-ready AI applications',
+    examples: [
+      {
+        name: 'Human-in-the-Loop',
+        file: 'human-in-loop/human-in-loop-example.js',
+        description: 'Human approval and intervention patterns',
+      },
+      {
+        name: 'Guardrails',
+        file: 'guardrails/guardrails-example.js',
+        description: 'Output validation, PII detection, content filtering',
+      },
+      {
+        name: 'Smart Model Router',
+        file: 'model-router/model-router-example.js',
+        description: 'Route to models based on task complexity and cost',
+      },
       {
         name: 'Error Handling',
         file: 'error-handling/error-handling-example.js',
@@ -121,11 +215,17 @@ const examples = {
         file: 'cost-tracking/cost-tracking-example.js',
         description: 'Monitor token usage and estimate API costs',
       },
-      // Optimization Techniques
+    ],
+  },
+  {
+    id: 'strategies',
+    title: '⚡ Optimization',
+    description: 'Performance and cost optimization techniques',
+    examples: [
       {
         name: 'Response Caching',
         file: 'caching/caching-example.js',
-        description: 'Caching strategies to reduce costs and improve latency',
+        description: 'Caching strategies to reduce costs and latency',
       },
       {
         name: 'Token Optimization',
@@ -137,7 +237,13 @@ const examples = {
         file: 'batch/batch-example.js',
         description: 'Efficient parallel and sequential processing',
       },
-      // Advanced Techniques
+    ],
+  },
+  {
+    id: 'strategies',
+    title: '🧠 Advanced Techniques',
+    description: 'Advanced AI development techniques',
+    examples: [
       {
         name: 'Memory Management',
         file: 'memory/memory-example.js',
@@ -146,12 +252,12 @@ const examples = {
       {
         name: 'Context Extraction',
         file: 'context-extraction/context-extraction-example.js',
-        description: 'Extract relevant context from chat history (galactiq pattern)',
+        description: 'Extract relevant context from chat history',
       },
       {
         name: 'State Persistence',
         file: 'state-persistence/state-persistence-example.js',
-        description: 'Checkpointing and state management pattern from galactiq',
+        description: 'Checkpointing and state management pattern',
       },
       {
         name: 'Prompt Engineering',
@@ -161,14 +267,17 @@ const examples = {
       {
         name: 'Evaluation & Testing',
         file: 'evaluation/evaluation-example.js',
-        description: 'Quality evaluation, A/B testing, and automated test suites',
+        description: 'Quality evaluation, A/B testing, automated tests',
       },
     ],
   },
-};
+];
+
+// =============================================================================
+// READLINE INTERFACE
+// =============================================================================
 
 function createInterface() {
-  // Ensure stdin is in the right state
   if (process.stdin.isTTY) {
     process.stdin.setRawMode(false);
     if (process.stdin.isPaused()) {
@@ -183,55 +292,63 @@ function createInterface() {
   });
 }
 
-function displayMenu() {
-  // Only clear screen if not in CI/test environment
+// =============================================================================
+// DISPLAY FUNCTIONS
+// =============================================================================
+
+function displayMainMenu() {
   if (process.stdout.isTTY) {
     console.clear();
   }
+
   console.log('╔══════════════════════════════════════════════════════════════╗');
-  console.log('║          AI Agents Demo - Example Selector                 ║');
+  console.log('║            AI Agents Demo - Select a Category               ║');
   console.log('╚══════════════════════════════════════════════════════════════╝');
   console.log('');
 
-  let optionNumber = 1;
-  const optionMap = new Map();
-
-  // SDK Usage Examples
-  console.log(`\n${examples['sdk-usage'].title}`);
-  console.log('─'.repeat(60));
-  examples['sdk-usage'].examples.forEach((example) => {
-    console.log(`  ${optionNumber}. ${example.name}`);
-    console.log(`     ${example.description}`);
-    optionMap.set(optionNumber, { category: 'sdk-usage', file: example.file });
-    optionNumber++;
+  categories.forEach((category, index) => {
+    const num = index + 1;
+    console.log(`  ${num}. ${category.title}`);
+    console.log(`     ${category.description} (${category.examples.length} examples)`);
+    console.log('');
   });
 
-  // Strategy Examples
-  console.log(`\n${examples['strategies'].title}`);
-  console.log('─'.repeat(60));
-  examples['strategies'].examples.forEach((example) => {
-    console.log(`  ${optionNumber}. ${example.name}`);
-    console.log(`     ${example.description}`);
-    optionMap.set(optionNumber, { category: 'strategies', file: example.file });
-    optionNumber++;
-  });
-
-  console.log(`\n  ${optionNumber}. Exit`);
+  console.log(`  ${categories.length + 1}. Exit`);
   console.log('');
   console.log('─'.repeat(60));
-
-  return { optionMap, maxOption: optionNumber };
 }
 
-function runExample(category, file, menuRl) {
-  const filePath = join(__dirname, 'examples', category, file);
-  const isInteractive = file === 'interactive-chat.js';
+function displayCategoryMenu(categoryIndex) {
+  const category = categories[categoryIndex];
 
-  // For interactive examples, close the menu's readline to prevent conflicts
-  if (isInteractive && menuRl) {
-    menuRl.pause();
-    menuRl.close();
+  if (process.stdout.isTTY) {
+    console.clear();
   }
+
+  console.log('╔══════════════════════════════════════════════════════════════╗');
+  console.log(`║  ${category.title.padEnd(56)}║`);
+  console.log('╚══════════════════════════════════════════════════════════════╝');
+  console.log('');
+
+  category.examples.forEach((example, index) => {
+    const num = index + 1;
+    console.log(`  ${num}. ${example.name}`);
+    console.log(`     ${example.description}`);
+    console.log('');
+  });
+
+  console.log(`  ${category.examples.length + 1}. ← Back to Main Menu`);
+  console.log('');
+  console.log('─'.repeat(60));
+}
+
+// =============================================================================
+// RUN EXAMPLE
+// =============================================================================
+
+function runExample(categoryId, file, callback) {
+  const filePath = join(__dirname, 'examples', categoryId, file);
+  const isInteractive = file === 'interactive-chat.js';
 
   console.log(`\n🚀 Running: ${file}\n`);
   console.log('─'.repeat(60));
@@ -249,23 +366,17 @@ function runExample(category, file, menuRl) {
     if (code === 0) {
       console.log('✅ Example completed successfully');
     } else if (code === null) {
-      // Process was terminated (e.g., Ctrl+C)
       console.log('⚠️  Example was interrupted');
     } else {
       console.log(`❌ Example exited with code ${code}`);
     }
     console.log('─'.repeat(60));
 
-    // For interactive examples, don't wait for Enter - just return to menu
     if (isInteractive) {
       console.log('\nReturning to menu...\n');
-      setTimeout(() => {
-        const { optionMap: newMap, maxOption: newMax } = displayMenu();
-        const newRl = createInterface();
-        promptUser(newRl, newMap, newMax);
-      }, 1000);
+      setTimeout(callback, 1000);
     } else {
-      console.log('\nPress Enter to return to menu...');
+      console.log('\nPress Enter to continue...');
     }
   });
 
@@ -274,102 +385,93 @@ function runExample(category, file, menuRl) {
     if (error.code === 'ENOENT') {
       console.error(`   File not found: ${filePath}`);
     }
-
-    // Recreate menu interface if it was closed
-    if (isInteractive) {
-      setTimeout(() => {
-        const { optionMap: newMap, maxOption: newMax } = displayMenu();
-        const newRl = createInterface();
-        promptUser(newRl, newMap, newMax);
-      }, 1000);
-    } else {
-      console.log('\nPress Enter to return to menu...');
-    }
+    console.log('\nPress Enter to continue...');
   });
+
+  return isInteractive;
 }
 
-function promptUser(rl, optionMap, maxOption) {
-  // Remove any existing listeners to prevent duplicates
+// =============================================================================
+// MENU NAVIGATION
+// =============================================================================
+
+function promptMainMenu(rl) {
   rl.removeAllListeners('line');
 
-  rl.question(`\nSelect an example (1-${maxOption}): `, (answer) => {
-    const trimmed = answer.trim();
+  displayMainMenu();
 
-    // Handle empty input
-    if (!trimmed) {
-      console.log('\n❌ Please enter a number.');
+  rl.question(`Select a category (1-${categories.length + 1}): `, (answer) => {
+    const choice = parseInt(answer.trim(), 10);
+
+    if (isNaN(choice) || choice < 1 || choice > categories.length + 1) {
+      console.log('\n❌ Invalid option.');
       rl.close();
       setTimeout(() => {
-        const { optionMap: newMap, maxOption: newMax } = displayMenu();
-        promptUser(createInterface(), newMap, newMax);
-      }, 1500);
+        promptMainMenu(createInterface());
+      }, 1000);
       return;
     }
 
-    const choice = parseInt(trimmed, 10);
-
-    if (isNaN(choice)) {
-      console.log('\n❌ Invalid input. Please enter a number.');
-      rl.close();
-      setTimeout(() => {
-        const { optionMap: newMap, maxOption: newMax } = displayMenu();
-        promptUser(createInterface(), newMap, newMax);
-      }, 1500);
-      return;
-    }
-
-    if (choice === maxOption) {
+    if (choice === categories.length + 1) {
       console.log('\n👋 Goodbye!');
       rl.close();
       process.exit(0);
     }
 
-    if (choice < 1 || choice > maxOption - 1) {
-      console.log(`\n❌ Invalid option. Please select a number between 1 and ${maxOption - 1}.`);
+    rl.close();
+    promptCategoryMenu(createInterface(), choice - 1);
+  });
+}
+
+function promptCategoryMenu(rl, categoryIndex) {
+  rl.removeAllListeners('line');
+
+  const category = categories[categoryIndex];
+  displayCategoryMenu(categoryIndex);
+
+  rl.question(`Select an example (1-${category.examples.length + 1}): `, (answer) => {
+    const choice = parseInt(answer.trim(), 10);
+
+    if (isNaN(choice) || choice < 1 || choice > category.examples.length + 1) {
+      console.log('\n❌ Invalid option.');
       rl.close();
       setTimeout(() => {
-        const { optionMap: newMap, maxOption: newMax } = displayMenu();
-        promptUser(createInterface(), newMap, newMax);
-      }, 1500);
+        promptCategoryMenu(createInterface(), categoryIndex);
+      }, 1000);
       return;
     }
 
-    const selected = optionMap.get(choice);
-    if (selected) {
-      const isInteractive = selected.file === 'interactive-chat.js';
-
-      if (isInteractive) {
-        // For interactive chat, close menu readline and let child process take control
-        rl.close();
-        runExample(selected.category, selected.file, null);
-      } else {
-        // For non-interactive examples, close and wait
-        rl.close();
-        runExample(selected.category, selected.file, null);
-
-        // Wait for user to press Enter before showing menu again
-        const waitRl = createInterface();
-        waitRl.on('line', () => {
-          waitRl.close();
-          const { optionMap: newMap, maxOption: newMax } = displayMenu();
-          promptUser(createInterface(), newMap, newMax);
-        });
-      }
-    } else {
-      console.log('\n❌ Option not found.');
+    // Back to main menu
+    if (choice === category.examples.length + 1) {
       rl.close();
-      setTimeout(() => {
-        const { optionMap: newMap, maxOption: newMax } = displayMenu();
-        promptUser(createInterface(), newMap, newMax);
-      }, 1500);
+      promptMainMenu(createInterface());
+      return;
+    }
+
+    const example = category.examples[choice - 1];
+    rl.close();
+
+    const isInteractive = runExample(category.id, example.file, () => {
+      promptCategoryMenu(createInterface(), categoryIndex);
+    });
+
+    if (!isInteractive) {
+      // Wait for Enter to return to category menu
+      const waitRl = createInterface();
+      waitRl.on('line', () => {
+        waitRl.close();
+        promptCategoryMenu(createInterface(), categoryIndex);
+      });
     }
   });
 }
 
+// =============================================================================
+// MAIN
+// =============================================================================
+
 function main() {
-  const rl = createInterface();
-  const { optionMap, maxOption } = displayMenu();
-  promptUser(rl, optionMap, maxOption);
+  promptMainMenu(createInterface());
 }
 
 // Handle Ctrl+C gracefully

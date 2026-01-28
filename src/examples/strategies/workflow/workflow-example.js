@@ -253,7 +253,7 @@ async function workflowExample() {
   Execute this workflow step by step, making decisions as you go.`;
 
   const conditionalResult = await workflowAgent.agent.chat(conditionalPrompt);
-  console.log(conditionalResult.substring(0, 400) + '...');
+  console.log(`${conditionalResult.substring(0, 400)}...`);
 
   // Example 4: Parallel task workflow
   console.log('\n\n4️⃣ Parallel Task Workflow:');

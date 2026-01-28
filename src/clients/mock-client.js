@@ -80,7 +80,7 @@ export class MockAIClient extends AIClientInterface {
     for (const chunk of chunks) {
       await new Promise((resolve) => setTimeout(resolve, 10)); // Simulate delay
       if (onChunk) {
-        onChunk(chunk + ' ');
+        onChunk(`${chunk} `);
       }
     }
 
@@ -465,7 +465,7 @@ export class MockAIClient extends AIClientInterface {
             index: 0,
             message: {
               role: 'assistant',
-              content: content,
+              content,
             },
             finish_reason: 'stop',
           },

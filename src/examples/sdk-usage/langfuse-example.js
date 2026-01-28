@@ -21,9 +21,9 @@ let langfuse = null;
 
 function initializeLangfuse() {
   try {
-    const secretKey = config.langfuse.secretKey;
-    const publicKey = config.langfuse.publicKey;
-    const host = config.langfuse.host;
+    const { secretKey } = config.langfuse;
+    const { publicKey } = config.langfuse;
+    const { host } = config.langfuse;
 
     if (!secretKey || !publicKey) {
       throw new Error(

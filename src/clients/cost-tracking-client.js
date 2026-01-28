@@ -108,7 +108,7 @@ export class CostTrackingClient extends AIClientInterface {
    */
   trackRequest(provider, model, costData, metadata = {}) {
     // Calculate cost if not provided
-    let totalCost = costData.totalCost;
+    let { totalCost } = costData;
     if (totalCost === undefined || totalCost === null) {
       // Calculate cost from token counts
       const promptTokens = costData.promptTokens || costData.inputTokens || 0;

@@ -38,7 +38,7 @@ function createWorkflowSteps() {
       description: 'Analyze the research findings',
       execute: async (state) => {
         console.log(`     Analyzing research...`);
-        const research = state.results.research;
+        const { research } = state.results;
         await new Promise((resolve) => setTimeout(resolve, 500));
         return { analysis: `Analysis of: ${research.findings}` };
       },

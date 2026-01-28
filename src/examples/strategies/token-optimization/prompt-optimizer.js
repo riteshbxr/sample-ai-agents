@@ -29,7 +29,7 @@ export class PromptOptimizer {
    */
   static optimizeSystemPrompt(prompt) {
     // Remove verbose instructions, keep essential
-    let optimized = prompt
+    const optimized = prompt
       .replace(/I want you to/gi, '')
       .replace(/I need you to/gi, '')
       .replace(/Please make sure/gi, '')

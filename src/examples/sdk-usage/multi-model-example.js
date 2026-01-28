@@ -11,7 +11,7 @@ async function multiModelExample() {
     'Explain RAG (Retrieval-Augmented Generation) in simple terms for a startup founder.';
 
   console.log(`Question: ${question}\n`);
-  console.log('='.repeat(60) + '\n');
+  console.log(`${'='.repeat(60)}\n`);
 
   const comparisonService = new ModelComparisonService();
   const responses = await comparisonService.compareQuery(question);

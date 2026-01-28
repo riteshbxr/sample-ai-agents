@@ -129,7 +129,7 @@ async function securityExample() {
 
   console.log('Base prompt:', baseSystemPrompt);
   console.log('\nSecure prompt (with security context):');
-  console.log(securePrompt.substring(0, 200) + '...');
+  console.log(`${securePrompt.substring(0, 200)}...`);
 
   console.log('\n');
 

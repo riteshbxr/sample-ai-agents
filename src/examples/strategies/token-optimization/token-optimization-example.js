@@ -59,7 +59,7 @@ class PromptOptimizer {
    */
   static optimizeSystemPrompt(prompt) {
     // Remove verbose instructions, keep essential
-    let optimized = prompt
+    const optimized = prompt
       .replace(/I want you to/gi, '')
       .replace(/I need you to/gi, '')
       .replace(/Please make sure/gi, '')
@@ -266,7 +266,7 @@ async function tokenOptimizationExample() {
     const userMessages = messages.slice(1);
 
     // Remove oldest messages until under budget
-    let optimized = [systemMessage];
+    const optimized = [systemMessage];
     let removed = 0;
 
     for (let i = userMessages.length - 1; i >= 0; i--) {

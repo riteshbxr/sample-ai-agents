@@ -55,10 +55,29 @@ export const config = {
 };
 
 /**
+ * Check if running in a test environment
+ * @returns {boolean} True if in test environment
+ */
+function isTestEnvironment() {
+  return (
+    process.env.NODE_ENV === 'test' ||
+    process.env.NODE_TEST_CONTEXT !== undefined ||
+    (typeof process.env.npm_lifecycle_script === 'string' &&
+      process.env.npm_lifecycle_script.includes('test'))
+  );
+}
+
+/**
  * Provider Detection Utilities
  * Centralized logic for determining the default AI provider
  */
 export const providerUtils = {
+  /**
+   * Check if running in a test environment
+   * @returns {boolean} True if in test environment
+   */
+  isTestEnvironment,
+
   /**
    * Get the default provider with smart routing
    * Returns 'openai' which routes to Azure or Standard based on config
@@ -66,13 +85,6 @@ export const providerUtils = {
    * @throws {Error} If no provider is configured (unless in test mode)
    */
   getDefaultProvider() {
-    // Allow test keys or test environment to bypass validation
-    const isTestEnv =
-      process.env.NODE_ENV === 'test' ||
-      process.env.NODE_TEST_CONTEXT !== undefined ||
-      (typeof process.env.npm_lifecycle_script === 'string' &&
-        process.env.npm_lifecycle_script.includes('test'));
-
     if (config.openai.azureApiKey || config.openai.standardApiKey) {
       return 'openai'; // Smart routing based on config.openai.defaultProvider
     }
@@ -81,7 +93,7 @@ export const providerUtils = {
     }
 
     // In test mode, return a default provider
-    if (isTestEnv) {
+    if (isTestEnvironment()) {
       return 'mock';
     }
 
@@ -95,13 +107,6 @@ export const providerUtils = {
    * @throws {Error} If no provider is configured (unless in test mode)
    */
   getDefaultVisionProvider() {
-    // Allow test keys or test environment to bypass validation
-    const isTestEnv =
-      process.env.NODE_ENV === 'test' ||
-      process.env.NODE_TEST_CONTEXT !== undefined ||
-      (typeof process.env.npm_lifecycle_script === 'string' &&
-        process.env.npm_lifecycle_script.includes('test'));
-
     if (config.openai.azureApiKey || config.openai.standardApiKey) {
       return 'openai-standard'; // Vision works best with standard OpenAI
     }
@@ -110,7 +115,7 @@ export const providerUtils = {
     }
 
     // In test mode, return a default provider
-    if (isTestEnv) {
+    if (isTestEnvironment()) {
       return 'mock';
     }
 
@@ -124,20 +129,13 @@ export const providerUtils = {
    * @throws {Error} If OpenAI standard API key is not configured (unless in test mode)
    */
   getDefaultAssistantsProvider() {
-    // Allow test keys or test environment to bypass validation
-    const isTestEnv =
-      process.env.NODE_ENV === 'test' ||
-      process.env.NODE_TEST_CONTEXT !== undefined ||
-      (typeof process.env.npm_lifecycle_script === 'string' &&
-        process.env.npm_lifecycle_script.includes('test'));
-
-    if (!config.openai.standardApiKey && !isTestEnv) {
+    if (!config.openai.standardApiKey && !isTestEnvironment()) {
       throw new Error('OpenAI standard API key required for Assistants API');
     }
 
     // In test mode without a key, still return the provider
     // The client will be replaced with a mock in tests
-    if (isTestEnv && !config.openai.standardApiKey) {
+    if (isTestEnvironment() && !config.openai.standardApiKey) {
       return 'mock';
     }
 
@@ -152,7 +150,7 @@ export const providerUtils = {
   isProviderAvailable(provider) {
     switch (provider) {
       case 'openai':
-        return !!config.openai.standardApiKey || !!config.openai.azureApiKey;
+        return !!(config.openai.standardApiKey || config.openai.azureApiKey);
       case 'openai-standard':
         return !!config.openai.standardApiKey;
       case 'azure-openai':
@@ -160,12 +158,7 @@ export const providerUtils = {
       case 'claude':
         return !!config.claude.apiKey;
       case 'mock':
-        return (
-          process.env.NODE_ENV === 'test' ||
-          process.env.NODE_TEST_CONTEXT !== undefined ||
-          (typeof process.env.npm_lifecycle_script === 'string' &&
-            process.env.npm_lifecycle_script.includes('test'))
-        );
+        return isTestEnvironment();
       default:
         return false;
     }

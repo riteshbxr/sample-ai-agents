@@ -16,7 +16,7 @@ export function optimizeContext(messages, maxTokens = 3000) {
   const userMessages = messages.slice(1);
 
   // Remove oldest messages until under budget
-  let optimized = [systemMessage];
+  const optimized = [systemMessage];
   let removed = 0;
 
   for (let i = userMessages.length - 1; i >= 0; i--) {

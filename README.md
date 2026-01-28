@@ -25,7 +25,7 @@ A modern JavaScript project demonstrating the latest AI trends used by tech star
 
 ## 📋 Prerequisites
 
-- Node.js 18+ (with ES modules support)
+- Node.js 20+ (LTS recommended, with ES modules support)
 - API keys from:
   - [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service) (Recommended)
   - [OpenAI](https://platform.openai.com/api-keys) (Alternative)
