@@ -1,0 +1,293 @@
+{
+  "name": "memory-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for persistent knowledge storage",
+  "endpoint": "http://localhost:3005/run",
+  "tools": [
+    {
+      "name": "create_entity",
+      "description": "Create a named entity with properties",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Entity name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Entity type (person, company, concept, etc.)"
+          },
+          "properties": {
+            "type": "object",
+            "description": "Entity properties as key-value pairs"
+          }
+        },
+        "required": ["name", "type"]
+      }
+    },
+    {
+      "name": "get_entity",
+      "description": "Get an entity by ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entity ID"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "find_entities",
+      "description": "Find entities by type, name, or property",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Filter by entity type"
+          },
+          "name": {
+            "type": "string",
+            "description": "Filter by name (partial match)"
+          },
+          "property": {
+            "type": "object",
+            "description": "Filter by property value"
+          }
+        }
+      }
+    },
+    {
+      "name": "update_entity",
+      "description": "Update entity properties",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entity ID"
+          },
+          "properties": {
+            "type": "object",
+            "description": "Properties to update"
+          }
+        },
+        "required": ["id", "properties"]
+      }
+    },
+    {
+      "name": "delete_entity",
+      "description": "Delete an entity",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entity ID to delete"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "add_fact",
+      "description": "Add a fact (subject-predicate-object triple)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "Subject of the fact"
+          },
+          "predicate": {
+            "type": "string",
+            "description": "Relationship/predicate"
+          },
+          "object": {
+            "type": "string",
+            "description": "Object of the fact"
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Confidence score 0-1",
+            "default": 1.0
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the fact"
+          }
+        },
+        "required": ["subject", "predicate", "object"]
+      }
+    },
+    {
+      "name": "query_facts",
+      "description": "Query facts by subject, predicate, or object",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "Filter by subject"
+          },
+          "predicate": {
+            "type": "string",
+            "description": "Filter by predicate"
+          },
+          "object": {
+            "type": "string",
+            "description": "Filter by object"
+          },
+          "minConfidence": {
+            "type": "number",
+            "description": "Minimum confidence threshold"
+          }
+        }
+      }
+    },
+    {
+      "name": "add_note",
+      "description": "Add a free-form note",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Note content"
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Tags for the note"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata"
+          }
+        },
+        "required": ["content"]
+      }
+    },
+    {
+      "name": "search_notes",
+      "description": "Search notes by content or tags",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Filter by tags"
+          }
+        }
+      }
+    },
+    {
+      "name": "save_conversation",
+      "description": "Save a conversation summary",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "description": "Unique conversation ID"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Conversation summary"
+          },
+          "keyPoints": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Key points from conversation"
+          },
+          "entities": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Entities mentioned"
+          }
+        },
+        "required": ["conversationId", "summary"]
+      }
+    },
+    {
+      "name": "get_conversation",
+      "description": "Get a saved conversation summary",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation ID"
+          }
+        },
+        "required": ["conversationId"]
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search across all memory (entities, facts, notes)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max results",
+            "default": 10
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "get_stats",
+      "description": "Get memory statistics",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "export_memory",
+      "description": "Export all memory data",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "import_memory",
+      "description": "Import memory data",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "Memory data to import"
+          }
+        },
+        "required": ["data"]
+      }
+    },
+    {
+      "name": "clear_memory",
+      "description": "Clear all memory data",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

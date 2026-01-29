@@ -518,57 +518,58 @@ Be thorough but concise in your responses.`;
 }
 
 /**
- * Create a search provider that uses Brave Search API
+ * Create a search provider that uses the Brave Search API directly
  *
- * Brave Search is the recommended MCP for browser search:
- * - Official MCP: https://github.com/brave/brave-search-mcp-server
- * - Get API key: https://brave.com/search/api/
+ * This provider calls the Brave Search API without requiring a separate MCP server.
  *
- * Other options:
- * - Google Custom Search: https://developers.google.com/custom-search
- * - Bing Search API: https://www.microsoft.com/en-us/bing/apis/bing-web-search-api
- * - Tavily: https://tavily.com (AI-optimized search)
+ * SETUP:
+ * 1. Get a free API key from: https://brave.com/search/api/
+ * 2. Set the environment variable: export BRAVE_API_KEY=your_key
  *
- * @param {Object} config - API configuration
- * @param {string} config.apiKey - Brave Search API key
+ * @param {Object} [config] - Configuration options
+ * @param {string} [config.apiKey] - Brave API key (defaults to BRAVE_API_KEY env var)
  * @returns {WebSearchProvider} Search provider
  */
-export function createBraveSearchProvider(config) {
-  const baseUrl = 'https://api.search.brave.com/res/v1';
+export function createBraveSearchProvider(config = {}) {
+  const apiKey = config.apiKey || process.env.BRAVE_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('BRAVE_API_KEY is required. Get a free key at: https://brave.com/search/api/');
+  }
+
+  const BRAVE_API_URL = 'https://api.search.brave.com/res/v1/web/search';
 
   return {
     search: async (query) => {
-      const response = await fetch(
-        `${baseUrl}/web/search?q=${encodeURIComponent(query)}&count=10`,
-        {
-          headers: {
-            Accept: 'application/json',
-            'X-Subscription-Token': config.apiKey,
-          },
-        }
-      );
+      const url = `${BRAVE_API_URL}?q=${encodeURIComponent(query)}&count=10`;
+
+      const response = await fetch(url, {
+        headers: {
+          Accept: 'application/json',
+          'X-Subscription-Token': apiKey,
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(`Brave Search API error: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Brave API error ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
 
       return (
         data.web?.results?.map((r) => ({
-          title: r.title,
-          url: r.url,
-          snippet: r.description,
+          title: r.title || '',
+          url: r.url || '',
+          snippet: r.description || '',
         })) || []
       );
     },
 
     fetchPage: async (url) => {
-      // For page fetching, use the MCP Fetch server or a readability library
-      // This is a basic implementation - consider using @mozilla/readability
       const response = await fetch(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; MCPBot/1.0; +https://modelcontextprotocol.io)',
+          'User-Agent': 'Mozilla/5.0 (compatible; BraveSearchBot/1.0)',
         },
       });
 
@@ -578,14 +579,95 @@ export function createBraveSearchProvider(config) {
 
       const html = await response.text();
 
-      // Basic HTML to text extraction (use readability in production)
+      // Basic HTML to text extraction
       return html
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
         .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
         .replace(/<[^>]+>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
-        .substring(0, 10000); // Limit content length
+        .substring(0, 10000);
+    },
+  };
+}
+
+/**
+ * Create a search provider that uses the local Playwright MCP server
+ *
+ * This provider connects to the Playwright MCP server running at localhost:3001.
+ * Start the server first with: npm run demo:playwright-mcp:start
+ *
+ * The Playwright server performs real browser-based searches using Google or Bing.
+ *
+ * @param {Object} [config] - Configuration options
+ * @param {string} [config.baseUrl='http://localhost:3001'] - Playwright MCP server URL
+ * @param {string} [config.engine='google'] - Search engine ('google' or 'bing')
+ * @param {boolean} [config.headless=true] - Run browser in headless mode
+ * @returns {WebSearchProvider} Search provider
+ */
+export function createPlaywrightSearchProvider(config = {}) {
+  const baseUrl = config.baseUrl || 'http://localhost:3001';
+  const engine = config.engine || 'google';
+  const headless = config.headless !== false;
+
+  return {
+    search: async (query) => {
+      const response = await fetch(`${baseUrl}/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'search',
+          params: {
+            query,
+            engine,
+            headless,
+            maxResults: 10,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Playwright MCP server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(`Playwright search failed: ${data.error || 'Unknown error'}`);
+      }
+
+      return (
+        data.results?.map((r) => ({
+          title: r.title,
+          url: r.href,
+          snippet: r.snippet || '',
+        })) || []
+      );
+    },
+
+    fetchPage: async (url) => {
+      // Playwright MCP server doesn't support page fetch yet
+      // Fall back to basic fetch
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; PlaywrightBot/1.0)',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch page: ${response.status}`);
+      }
+
+      const html = await response.text();
+
+      // Basic HTML to text extraction
+      return html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 10000);
     },
   };
 }

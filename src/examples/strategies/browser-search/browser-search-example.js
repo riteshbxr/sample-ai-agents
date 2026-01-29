@@ -5,52 +5,49 @@ import { providerUtils } from '../../../config.js';
  * Browser Search Agent Example
  *
  * This example demonstrates an AI agent with web search capabilities,
- * following the MCP (Model Context Protocol) pattern for tool use.
+ * using the Brave Search API for real web searches.
+ *
+ * PREREQUISITES:
+ * ==============
+ * 1. Get a Brave Search API key: https://brave.com/search/api/ (free tier available)
+ * 2. Set environment variable: export BRAVE_API_KEY=your_key
+ *
+ * USAGE:
+ * ======
+ * npm run demo:browser-search
  *
  * The agent can:
- * - Search the web for information
+ * - Search the web for information via Brave Search
  * - Read and extract content from web pages
  * - Synthesize information from multiple sources
  * - Provide cited responses
- *
- * RECOMMENDED MCP FOR BROWSER SEARCH:
- * ===================================
- * Brave Search MCP is the best option for web search:
- * - Official: https://github.com/brave/brave-search-mcp-server
- * - Install: npx @anthropic-ai/brave-search-mcp-server
- * - Get API key: https://brave.com/search/api/ (free tier available)
- *
- * Other MCP options:
- * - Fetch MCP (@modelcontextprotocol/server-fetch) - Web content fetching
- * - Playwright MCP - Full browser automation
- * - Tavily MCP - AI-optimized search
  */
 
 async function browserSearchExample() {
   console.log('=== Browser Search Agent Example ===\n');
-  console.log('This example shows how to build an AI agent with web search capabilities.');
-  console.log(
-    'The agent uses tools to search and read web content, similar to MCP browser integration.\n'
-  );
+  console.log('This example uses the Brave Search API for real web search.\n');
 
-  // Choose provider
-  const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
-  console.log(`Using ${provider.toUpperCase()} provider\n`);
-
-  // Check for Brave Search API key for real search
-  const braveApiKey = process.env.BRAVE_SEARCH_API_KEY;
-  if (braveApiKey) {
-    console.log('✓ Brave Search API key found - using real search\n');
-  } else {
-    console.log('ℹ Using mock search (set BRAVE_SEARCH_API_KEY for real search)\n');
-    console.log('Get a free API key at: https://brave.com/search/api/\n');
+  // Check for API key
+  if (!process.env.BRAVE_API_KEY) {
+    console.error('❌ BRAVE_API_KEY environment variable is required!\n');
+    console.log('Setup:');
+    console.log('  1. Get a free API key: https://brave.com/search/api/');
+    console.log('  2. Set env var: export BRAVE_API_KEY=your_key');
+    console.log('  3. Run: npm run demo:browser-search\n');
+    process.exitCode = 1;
+    return;
   }
 
-  // Create agent with optional real search provider
-  const searchProvider = braveApiKey
-    ? createBraveSearchProvider({ apiKey: braveApiKey })
-    : undefined;
+  console.log('✓ Brave API key found\n');
 
+  // Choose AI provider
+  const provider = providerUtils.isProviderAvailable('openai') ? 'openai' : 'claude';
+  console.log(`Using ${provider.toUpperCase()} AI provider\n`);
+
+  // Create search provider using Brave Search API directly
+  const searchProvider = createBraveSearchProvider();
+
+  // Create agent with Brave search provider
   const agent = new BrowserSearchAgent(provider, { searchProvider });
 
   // Example queries that will use search tools
@@ -103,23 +100,15 @@ async function browserSearchExample() {
   console.log('─'.repeat(60));
   console.log('\n✅ Browser Search Agent Example Complete');
   console.log('\nKey Takeaways:');
-  console.log('1. Web search enables agents to access current information');
-  console.log('2. Tool calling follows the MCP pattern for structured interactions');
+  console.log('1. Search providers abstract the underlying search implementation');
+  console.log('2. The agent uses tools to search and fetch web content');
   console.log('3. Multi-turn conversations maintain context across queries');
   console.log('4. Always cite sources when presenting web-sourced information');
-  console.log('\n📦 Recommended MCP Servers for Browser/Search:');
+  console.log('\n📦 Related examples in this project:');
   console.log('─'.repeat(60));
-  console.log('1. Brave Search MCP (BEST for search):');
-  console.log('   npx @anthropic-ai/brave-search-mcp-server');
-  console.log('   https://github.com/brave/brave-search-mcp-server');
-  console.log('\n2. Fetch MCP (web content fetching):');
-  console.log('   npx @modelcontextprotocol/server-fetch');
-  console.log('\n3. Playwright MCP (full browser automation):');
-  console.log(
-    '   https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-server-playwright'
-  );
-  console.log('\n4. Tavily MCP (AI-optimized search):');
-  console.log('   https://github.com/tavily-ai/tavily-mcp');
+  console.log('1. Playwright MCP (browser automation):');
+  console.log('   npm run demo:playwright-mcp:start');
+  console.log('   npm run demo:playwright-search');
 }
 
 // Run the example

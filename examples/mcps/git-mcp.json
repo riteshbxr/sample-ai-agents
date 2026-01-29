@@ -1,0 +1,207 @@
+{
+  "name": "git-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Git operations",
+  "endpoint": "http://localhost:3006/run",
+  "tools": [
+    {
+      "name": "status",
+      "description": "Get repository status (staged, modified, untracked files)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "log",
+      "description": "Get commit history",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "description": "Number of commits to show",
+            "default": 10
+          },
+          "branch": {
+            "type": "string",
+            "description": "Branch name"
+          },
+          "author": {
+            "type": "string",
+            "description": "Filter by author"
+          },
+          "since": {
+            "type": "string",
+            "description": "Show commits since date (e.g., '2024-01-01')"
+          },
+          "until": {
+            "type": "string",
+            "description": "Show commits until date"
+          }
+        }
+      }
+    },
+    {
+      "name": "diff",
+      "description": "Get diff of changes",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "staged": {
+            "type": "boolean",
+            "description": "Show staged changes",
+            "default": false
+          },
+          "file": {
+            "type": "string",
+            "description": "Specific file to diff"
+          },
+          "commit": {
+            "type": "string",
+            "description": "Compare with specific commit"
+          }
+        }
+      }
+    },
+    {
+      "name": "branches",
+      "description": "List branches",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "all": {
+            "type": "boolean",
+            "description": "Include remote branches",
+            "default": false
+          }
+        }
+      }
+    },
+    {
+      "name": "show",
+      "description": "Show commit details",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "commit": {
+            "type": "string",
+            "description": "Commit hash or reference",
+            "default": "HEAD"
+          },
+          "stat": {
+            "type": "boolean",
+            "description": "Include file statistics",
+            "default": false
+          }
+        }
+      }
+    },
+    {
+      "name": "show_file",
+      "description": "Show file content at specific revision",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "File path"
+          },
+          "commit": {
+            "type": "string",
+            "description": "Commit reference",
+            "default": "HEAD"
+          }
+        },
+        "required": ["file"]
+      }
+    },
+    {
+      "name": "tags",
+      "description": "List tags",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "description": "Max tags to return",
+            "default": 20
+          }
+        }
+      }
+    },
+    {
+      "name": "blame",
+      "description": "Show who changed each line of a file",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "File path"
+          },
+          "lines": {
+            "type": "string",
+            "description": "Line range (e.g., '10,20')"
+          }
+        },
+        "required": ["file"]
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search commits by message, content, or author",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["message", "content", "author"],
+            "description": "Search type",
+            "default": "message"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "info",
+      "description": "Get repository information",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "changed_files",
+      "description": "List files changed between commits",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Starting commit",
+            "default": "HEAD~1"
+          },
+          "to": {
+            "type": "string",
+            "description": "Ending commit",
+            "default": "HEAD"
+          }
+        }
+      }
+    },
+    {
+      "name": "contributors",
+      "description": "List repository contributors",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

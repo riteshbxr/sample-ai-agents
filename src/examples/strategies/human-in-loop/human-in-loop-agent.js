@@ -151,8 +151,7 @@ export class HumanInteractionHandler {
       }
     } else if (this.mode === 'callback' && this.callbacks.onApproval) {
       const result = await this.callbacks.onApproval(action, context);
-      approved = result.approved;
-      feedback = result.feedback;
+      ({ approved, feedback } = result);
     } else if (this.mode === 'mock') {
       approved = this.mockResponses.approved !== false;
       feedback = this.mockResponses.feedback || null;

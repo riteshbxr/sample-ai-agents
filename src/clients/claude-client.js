@@ -37,7 +37,7 @@ export class ClaudeClient extends AIClientInterface {
         // Handle both string content and structured content
         let content = '';
         if (typeof message.content === 'string') {
-          content = message.content;
+          ({ content } = message);
         } else if (Array.isArray(message.content)) {
           // Handle array of content blocks (e.g., text blocks)
           content = message.content

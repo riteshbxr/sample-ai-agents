@@ -114,6 +114,49 @@ const categories = [
     ],
   },
   {
+    id: 'mcps',
+    title: '🧩 MCP Examples (Model Context Protocol)',
+    description: 'MCP servers and clients for tool integration',
+    examples: [
+      {
+        name: 'Filesystem MCP',
+        file: 'demo-filesystem-mcp.js',
+        description: 'File operations: read, write, list, search',
+        server: { script: 'examples/mcps/filesystem-mcp-server.js', port: 3002 },
+      },
+      {
+        name: 'Fetch MCP',
+        file: 'demo-fetch-mcp.js',
+        description: 'HTTP fetching and web scraping',
+        server: { script: 'examples/mcps/fetch-mcp-server.js', port: 3003 },
+      },
+      {
+        name: 'SQLite MCP',
+        file: 'demo-sqlite-mcp.js',
+        description: 'Database operations: query, insert, update',
+        server: { script: 'examples/mcps/sqlite-mcp-server.js', port: 3004 },
+      },
+      {
+        name: 'Memory MCP',
+        file: 'demo-memory-mcp.js',
+        description: 'Persistent knowledge storage: entities, facts, notes',
+        server: { script: 'examples/mcps/memory-mcp-server.js', port: 3005 },
+      },
+      {
+        name: 'Git MCP',
+        file: 'demo-git-mcp.js',
+        description: 'Git operations: status, log, diff, branches',
+        server: { script: 'examples/mcps/git-mcp-server.js', port: 3006 },
+      },
+      {
+        name: 'Playwright MCP',
+        file: 'demo-call-playwright.js',
+        description: 'Browser automation and search',
+        server: { script: 'examples/mcps/playwright-browser-search-server.js', port: 3001 },
+      },
+    ],
+  },
+  {
     id: 'strategies',
     title: '🤖 Agent Patterns',
     description: 'AI agent architectures and patterns',
@@ -162,6 +205,12 @@ const categories = [
         name: 'Browser Search Agent',
         file: 'browser-search/browser-search-example.js',
         description: 'Web search and page reading with MCP-style tools',
+      },
+      {
+        name: 'Browser Search (Playwright)',
+        file: 'browser-search/playwright-browser-search-example.js',
+        description: 'Real browser search via Playwright MCP server',
+        server: { script: 'examples/mcps/playwright-browser-search-server.js', port: 3001 },
       },
       {
         name: 'Multi-Agent Collaboration',
@@ -343,14 +392,93 @@ function displayCategoryMenu(categoryIndex) {
 }
 
 // =============================================================================
+// SERVER MANAGEMENT
+// =============================================================================
+
+/**
+ * Wait for a server to be ready by polling the health endpoint
+ */
+async function waitForServer(port, maxAttempts = 30, intervalMs = 500) {
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const response = await fetch(`http://localhost:${port}/health`);
+      if (response.ok) {
+        return true;
+      }
+    } catch {
+      // Server not ready yet
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return false;
+}
+
+/**
+ * Start an MCP server as a background process
+ */
+function startServer(serverScript, port) {
+  const serverPath = join(__dirname, '..', serverScript);
+
+  console.log(`\n🔧 Starting MCP server: ${serverScript}`);
+  console.log(`   Port: ${port}`);
+
+  const serverProcess = spawn('node', [serverPath], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: false,
+    cwd: process.cwd(),
+  });
+
+  // Capture server output for debugging
+  serverProcess.stdout.on('data', (data) => {
+    const output = data.toString().trim();
+    if (output && !output.includes('running at')) {
+      // Suppress the "running at" message since we show our own
+    }
+  });
+
+  serverProcess.stderr.on('data', (data) => {
+    console.error(`   Server error: ${data.toString().trim()}`);
+  });
+
+  return serverProcess;
+}
+
+/**
+ * Stop a server process
+ */
+function stopServer(serverProcess) {
+  if (serverProcess && !serverProcess.killed) {
+    serverProcess.kill('SIGTERM');
+  }
+}
+
+// =============================================================================
 // RUN EXAMPLE
 // =============================================================================
 
-function runExample(categoryId, file, callback) {
+async function runExample(categoryId, file, callback, serverConfig = null) {
   const filePath = join(__dirname, 'examples', categoryId, file);
   const isInteractive = file === 'interactive-chat.js';
+  let serverProcess = null;
 
-  console.log(`\n🚀 Running: ${file}\n`);
+  // Start server if needed
+  if (serverConfig) {
+    serverProcess = startServer(serverConfig.script, serverConfig.port);
+
+    console.log('   Waiting for server to be ready...');
+    const isReady = await waitForServer(serverConfig.port);
+
+    if (!isReady) {
+      console.error('\n❌ Server failed to start. Check for errors above.');
+      stopServer(serverProcess);
+      console.log('\nPress Enter to continue...');
+      return false;
+    }
+
+    console.log('   ✓ Server is ready\n');
+  }
+
+  console.log(`🚀 Running: ${file}\n`);
   console.log('─'.repeat(60));
   console.log('');
 
@@ -361,6 +489,12 @@ function runExample(categoryId, file, callback) {
   });
 
   child.on('close', (code) => {
+    // Clean up server
+    if (serverProcess) {
+      console.log('\n🔧 Stopping MCP server...');
+      stopServer(serverProcess);
+    }
+
     console.log('\n');
     console.log('─'.repeat(60));
     if (code === 0) {
@@ -381,6 +515,11 @@ function runExample(categoryId, file, callback) {
   });
 
   child.on('error', (error) => {
+    // Clean up server on error
+    if (serverProcess) {
+      stopServer(serverProcess);
+    }
+
     console.error(`\n❌ Error running example: ${error.message}`);
     if (error.code === 'ENOENT') {
       console.error(`   File not found: ${filePath}`);
@@ -429,7 +568,7 @@ function promptCategoryMenu(rl, categoryIndex) {
   const category = categories[categoryIndex];
   displayCategoryMenu(categoryIndex);
 
-  rl.question(`Select an example (1-${category.examples.length + 1}): `, (answer) => {
+  rl.question(`Select an example (1-${category.examples.length + 1}): `, async (answer) => {
     const choice = parseInt(answer.trim(), 10);
 
     if (isNaN(choice) || choice < 1 || choice > category.examples.length + 1) {
@@ -451,9 +590,14 @@ function promptCategoryMenu(rl, categoryIndex) {
     const example = category.examples[choice - 1];
     rl.close();
 
-    const isInteractive = runExample(category.id, example.file, () => {
-      promptCategoryMenu(createInterface(), categoryIndex);
-    });
+    const isInteractive = await runExample(
+      category.id,
+      example.file,
+      () => {
+        promptCategoryMenu(createInterface(), categoryIndex);
+      },
+      example.server || null
+    );
 
     if (!isInteractive) {
       // Wait for Enter to return to category menu
