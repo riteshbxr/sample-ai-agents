@@ -53,7 +53,7 @@ test('VisionService - analyzeImage with base64 string', async () => {
   const service = new VisionService('mock');
 
   // Mock the analyzeImage method
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt, _options) => {
     return 'This is a test image';
   };
 
@@ -67,7 +67,7 @@ test('VisionService - analyzeImage with base64 string', async () => {
 test('VisionService - analyzeImage with data URL', async () => {
   const service = new VisionService('mock');
 
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt, _options) => {
     return 'Image analysis result';
   };
 
@@ -81,7 +81,7 @@ test('VisionService - analyzeImage with data URL', async () => {
 test('VisionService - analyzeImage with Buffer', async () => {
   const service = new VisionService('mock');
 
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt, _options) => {
     return 'Buffer image analysis';
   };
 
@@ -94,7 +94,7 @@ test('VisionService - analyzeImage with Buffer', async () => {
 test('VisionService - analyzeImage with file path', async () => {
   const service = new VisionService('mock');
 
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt, _options) => {
     return 'File image analysis';
   };
 
@@ -127,7 +127,7 @@ test('VisionService - analyzeImage with Claude provider', async () => {
   const service = new VisionService('mock');
   service.provider = 'claude';
 
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt, _options) => {
     return 'Claude vision analysis';
   };
 
@@ -141,7 +141,7 @@ test('VisionService - analyzeImage with options', async () => {
   const service = new VisionService('mock');
 
   let capturedOptions = null;
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt, options) => {
     capturedOptions = options;
     return 'Analysis result';
   };
@@ -180,7 +180,7 @@ test('VisionService - analyzeImage throws error for unsupported provider', async
 test('VisionService - extractText with OCR', async () => {
   const service = new VisionService('mock');
 
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, prompt, _options) => {
     // Verify OCR prompt is used
     assert.ok(prompt.includes('Extract all text'));
     assert.ok(prompt.includes('Return only the text content'));
@@ -198,7 +198,7 @@ test('VisionService - extractText with options', async () => {
   const service = new VisionService('mock');
 
   let capturedOptions = null;
-  service.client.analyzeImage = async (imageBase64, prompt, options) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt, options) => {
     capturedOptions = options;
     return 'Text content';
   };
@@ -214,7 +214,7 @@ test('VisionService - extractText with options', async () => {
 test('VisionService - extractText with file path', async () => {
   const service = new VisionService('mock');
 
-  service.client.analyzeImage = async (imageBase64, prompt) => {
+  service.client.analyzeImage = async (_imageBase64, _prompt) => {
     return 'Text from file image';
   };
 

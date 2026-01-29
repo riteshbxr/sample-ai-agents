@@ -201,12 +201,12 @@ test('StatefulAgent - execute workflow handles interruption', async () => {
   const steps = [
     {
       name: 'step1',
-      execute: async (state) => 'result1',
+      execute: async (_state) => 'result1',
     },
     {
       name: 'step2',
       simulateInterruption: true,
-      execute: async (state) => 'result2',
+      execute: async (_state) => 'result2',
     },
   ];
 
