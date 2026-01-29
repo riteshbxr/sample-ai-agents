@@ -71,7 +71,7 @@ test('ChatService - streaming chat', async () => {
 
 test('ChatService - chat with tools', async () => {
   const mockClient = new MockAIClient({
-    chatWithToolsHandler: async (messages, tools) => {
+    chatWithToolsHandler: async (_messages, _tools) => {
       return {
         choices: [
           {
@@ -115,7 +115,7 @@ test('ChatService - chat with tools', async () => {
 
 test('ChatService - structured output', async () => {
   const mockClient = new MockAIClient({
-    chatHandler: async (messages, options) => {
+    chatHandler: async (_messages, _options) => {
       return {
         choices: [
           {
@@ -176,7 +176,7 @@ test('ChatService - structured output with invalid JSON', async () => {
 
 test('ChatService - extract structured data', async () => {
   const mockClient = new MockAIClient({
-    chatHandler: async (messages) => {
+    chatHandler: async (_messages) => {
       return {
         choices: [
           {

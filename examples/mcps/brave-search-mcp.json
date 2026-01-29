@@ -1,0 +1,60 @@
+{
+  "name": "brave-search-mcp",
+  "version": "1.0.0",
+  "description": "Official Brave Search MCP server (external dependency)",
+  "installation": "npx @anthropic-ai/brave-search-mcp-server",
+  "apiKeyRequired": true,
+  "apiKeyUrl": "https://brave.com/search/api/",
+  "documentation": "https://github.com/anthropics/anthropic-quickstarts",
+  "cursorConfig": {
+    "mcpServers": {
+      "brave-search": {
+        "command": "npx",
+        "args": ["@anthropic-ai/brave-search-mcp-server"],
+        "env": {
+          "BRAVE_API_KEY": "your_brave_api_key_here"
+        }
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "brave_web_search",
+      "description": "Search the web using Brave Search",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of results (default: 10)",
+            "default": 10
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "brave_local_search",
+      "description": "Search for local businesses and places",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Local search query (e.g., 'coffee shops near me')"
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of results (default: 5)",
+            "default": 5
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "name": "fetch-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for HTTP fetching and web scraping",
+  "endpoint": "http://localhost:3003/run",
+  "tools": [
+    {
+      "name": "fetch",
+      "description": "Fetch content from a URL (HTTP GET)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to fetch"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Additional HTTP headers"
+          },
+          "timeout": {
+            "type": "number",
+            "description": "Request timeout in milliseconds",
+            "default": 30000
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "post",
+      "description": "Send HTTP POST request",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to post to"
+          },
+          "body": {
+            "type": "object",
+            "description": "Request body"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content-Type header",
+            "default": "application/json"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Additional HTTP headers"
+          }
+        },
+        "required": ["url", "body"]
+      }
+    },
+    {
+      "name": "fetch_text",
+      "description": "Fetch and extract plain text from a web page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to fetch"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CSS selector (not implemented yet)",
+            "default": "body"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "extract_links",
+      "description": "Extract all links from a web page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to fetch"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "extract_metadata",
+      "description": "Extract metadata from a web page (title, description, OG tags)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to fetch"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "check_url",
+      "description": "Check if a URL is accessible (HEAD request)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to check"
+          },
+          "timeout": {
+            "type": "number",
+            "description": "Timeout in milliseconds",
+            "default": 10000
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "fetch_json",
+      "description": "Fetch and parse JSON from an API endpoint",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "API URL to fetch"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Additional HTTP headers"
+          }
+        },
+        "required": ["url"]
+      }
+    }
+  ]
+}

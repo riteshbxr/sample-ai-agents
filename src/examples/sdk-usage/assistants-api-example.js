@@ -27,7 +27,7 @@ async function assistantsAPIExample() {
   }
 
   // If Azure is enabled but standard key exists, warn but allow
-  if (config.openai.defaultProvider == 'azure-openai') {
+  if (config.openai.defaultProvider === 'azure-openai') {
     console.log(
       'ℹ️  Note: Azure OpenAI is configured, but using standard OpenAI for Assistants API.'
     );
@@ -134,7 +134,7 @@ async function assistantsAPIExample() {
     if (followUpResponse) {
       console.log('🤖 Assistant Response:');
       console.log('-'.repeat(60));
-      console.log(followUpResponse.substring(0, 300) + '...');
+      console.log(`${followUpResponse.substring(0, 300)}...`);
     }
 
     console.log('\n');

@@ -109,7 +109,7 @@ class MultiAgentSystem {
     return {
       research: researchResults,
       draft: article,
-      review: review,
+      review,
       final: finalArticle,
     };
   }
@@ -126,7 +126,7 @@ async function multiAgentExample() {
     const result = await system.collaborateOnTask(task);
     console.log('\n✅ Collaboration Complete!');
     console.log(`Final article length: ${result.final.length} characters\n`);
-    console.log('='.repeat(60) + '\n');
+    console.log(`${'='.repeat(60)}\n`);
   }
 }
 

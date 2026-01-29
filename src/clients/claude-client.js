@@ -37,7 +37,7 @@ export class ClaudeClient extends AIClientInterface {
         // Handle both string content and structured content
         let content = '';
         if (typeof message.content === 'string') {
-          content = message.content;
+          ({ content } = message);
         } else if (Array.isArray(message.content)) {
           // Handle array of content blocks (e.g., text blocks)
           content = message.content
@@ -79,7 +79,7 @@ export class ClaudeClient extends AIClientInterface {
     const systemParam = options.system || systemContent;
 
     // Claude doesn't support response_format parameter - remove it if present
-    const { response_format, ...claudeOptions } = options;
+    const { response_format: _response_format, ...claudeOptions } = options;
 
     const response = await this.client.messages.create({
       model: this.model,
@@ -107,7 +107,7 @@ export class ClaudeClient extends AIClientInterface {
     const systemParam = options.system || systemContent;
 
     // Claude doesn't support response_format parameter - remove it if present
-    const { response_format, ...claudeOptions } = options;
+    const { response_format: _response_format, ...claudeOptions } = options;
 
     const stream = await this.client.messages.stream({
       model: this.model,
@@ -174,7 +174,7 @@ export class ClaudeClient extends AIClientInterface {
     const systemParam = options.system || systemContent;
 
     // Claude doesn't support response_format parameter - remove it if present
-    const { response_format, ...claudeOptions } = options;
+    const { response_format: _response_format, ...claudeOptions } = options;
 
     const response = await this.client.messages.create({
       model: this.model,
@@ -351,7 +351,7 @@ export class ClaudeClient extends AIClientInterface {
    * @returns {Object} Cost calculation result with inputTokens, outputTokens, totalTokens, inputCost, outputCost, totalCost
    */
   calculateCost(response, model = null) {
-    const usage = response.usage;
+    const { usage } = response;
     if (!usage) {
       return {
         inputTokens: 0,

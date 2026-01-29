@@ -64,7 +64,7 @@ export function createStreamingMockClient(responseText = 'Streaming response') {
       for (const word of words) {
         await new Promise((resolve) => setTimeout(resolve, 10));
         if (onChunk) {
-          onChunk(word + ' ');
+          onChunk(`${word} `);
         }
       }
       return responseText;

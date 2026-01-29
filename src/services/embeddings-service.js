@@ -114,13 +114,13 @@ export class EmbeddingsService {
     const dim = embeddings[0].length;
 
     // Initialize centroids randomly
-    let centroids = [];
+    const centroids = [];
     for (let i = 0; i < k; i++) {
       const randomIdx = Math.floor(Math.random() * n);
       centroids.push([...embeddings[randomIdx]]);
     }
 
-    let clusters = new Array(n).fill(0);
+    const clusters = new Array(n).fill(0);
 
     for (let iter = 0; iter < maxIterations; iter++) {
       // Assign points to nearest centroid

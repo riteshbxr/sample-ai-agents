@@ -133,7 +133,7 @@ async function agentExample() {
 
     const response = await agent.chat(userMessage);
     console.log(response);
-    console.log('\n' + '='.repeat(60));
+    console.log(`\n${'='.repeat(60)}`);
   }
 }
 

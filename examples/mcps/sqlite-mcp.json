@@ -1,0 +1,204 @@
+{
+  "name": "sqlite-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for SQLite database operations",
+  "endpoint": "http://localhost:3004/run",
+  "tools": [
+    {
+      "name": "list_tables",
+      "description": "List all tables in the database",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_schema",
+      "description": "Get the database schema with table definitions",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_table",
+      "description": "Create a new table",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Table name"
+          },
+          "columns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Column names"
+          }
+        },
+        "required": ["name", "columns"]
+      }
+    },
+    {
+      "name": "drop_table",
+      "description": "Drop (delete) a table",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Table name to drop"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "insert",
+      "description": "Insert a row into a table",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "Table name"
+          },
+          "data": {
+            "type": "object",
+            "description": "Row data as key-value pairs"
+          }
+        },
+        "required": ["table", "data"]
+      }
+    },
+    {
+      "name": "select",
+      "description": "Select rows from a table",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "Table name"
+          },
+          "where": {
+            "type": "object",
+            "description": "Filter conditions"
+          },
+          "columns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Columns to return"
+          },
+          "orderBy": {
+            "type": "string",
+            "description": "Order by column (e.g., 'name ASC')"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max rows to return"
+          },
+          "offset": {
+            "type": "number",
+            "description": "Number of rows to skip"
+          }
+        },
+        "required": ["table"]
+      }
+    },
+    {
+      "name": "update",
+      "description": "Update rows in a table",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "Table name"
+          },
+          "where": {
+            "type": "object",
+            "description": "Filter for rows to update"
+          },
+          "data": {
+            "type": "object",
+            "description": "New values"
+          }
+        },
+        "required": ["table", "where", "data"]
+      }
+    },
+    {
+      "name": "delete",
+      "description": "Delete rows from a table",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "Table name"
+          },
+          "where": {
+            "type": "object",
+            "description": "Filter for rows to delete"
+          }
+        },
+        "required": ["table", "where"]
+      }
+    },
+    {
+      "name": "count",
+      "description": "Count rows in a table",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "Table name"
+          },
+          "where": {
+            "type": "object",
+            "description": "Filter conditions"
+          }
+        },
+        "required": ["table"]
+      }
+    },
+    {
+      "name": "query",
+      "description": "Execute a SQL-like query (limited support)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sql": {
+            "type": "string",
+            "description": "SQL query string"
+          }
+        },
+        "required": ["sql"]
+      }
+    },
+    {
+      "name": "export_data",
+      "description": "Export entire database to JSON",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "import_data",
+      "description": "Import database from JSON",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "Database data to import"
+          }
+        },
+        "required": ["data"]
+      }
+    }
+  ]
+}

@@ -333,7 +333,7 @@ Current context: ${JSON.stringify(context)}`;
           const result = await tool.execute(toolParams);
           results.push({
             tool: toolName,
-            result: result,
+            result,
           });
           console.log(`✅ [Orchestrator] ${toolName} completed\n`);
         } else {
@@ -347,7 +347,7 @@ Current context: ${JSON.stringify(context)}`;
 
       return {
         selectedTools: toolCalls.map((tc) => tc.function?.name || tc.name),
-        results: results,
+        results,
         message: 'Orchestration completed successfully',
       };
     }

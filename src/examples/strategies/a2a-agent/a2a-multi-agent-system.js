@@ -212,7 +212,7 @@ export class A2AMultiAgentSystem {
    * Get communication statistics
    */
   getCommunicationStats() {
-    const messages = this.messageBus.messages;
+    const { messages } = this.messageBus;
     return {
       totalMessages: messages.length,
       messagesByAgent: Array.from(this.agents.keys()).reduce((acc, agentId) => {
@@ -225,7 +225,7 @@ export class A2AMultiAgentSystem {
       messageHistory: messages.map((m) => ({
         from: m.from,
         to: m.to,
-        content: m.content.substring(0, 50) + '...',
+        content: `${m.content.substring(0, 50)}...`,
         timestamp: m.timestamp,
       })),
     };

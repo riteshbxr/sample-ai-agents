@@ -30,7 +30,7 @@ export class CostTracker {
    */
   trackRequest(provider, model, costData, metadata = {}) {
     // Calculate cost if not provided
-    let totalCost = costData.totalCost;
+    let { totalCost } = costData;
     let finalCostData = { ...costData };
 
     if (totalCost === undefined || totalCost === null) {
@@ -63,7 +63,7 @@ export class CostTracker {
         if (costData.usage) {
           // costData is already a response object
           finalCostData = client.calculateCost(costData, model);
-          totalCost = finalCostData.totalCost;
+          ({ totalCost } = finalCostData);
         } else {
           // Construct a mock response object with usage from token counts
           const promptTokens = costData.promptTokens || costData.inputTokens || 0;
@@ -86,7 +86,7 @@ export class CostTracker {
           };
 
           finalCostData = client.calculateCost(mockResponse, model);
-          totalCost = finalCostData.totalCost;
+          ({ totalCost } = finalCostData);
         }
       } else {
         // Fallback to manual calculation if client creation failed or doesn't have calculateCost

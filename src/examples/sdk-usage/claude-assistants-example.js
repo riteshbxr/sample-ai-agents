@@ -90,7 +90,7 @@ class ClaudeAssistant {
       content: msg.content,
     }));
 
-    let maxIterations = 5;
+    const maxIterations = 5;
     let iteration = 0;
     let finalResponse = '';
 

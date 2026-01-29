@@ -145,8 +145,8 @@ async function llmNode(state) {
       llm = new ChatOpenAI({
         model: deployment,
         temperature: 0.7,
-        apiKey: apiKey,
-        baseURL: baseURL,
+        apiKey,
+        baseURL,
       });
       console.log(`  🔧 Using ChatOpenAI with Azure baseURL: ${baseURL}, deployment=${deployment}`);
     }
@@ -155,7 +155,7 @@ async function llmNode(state) {
     llm = new ChatOpenAI({
       model: providerUtils.getDefaultModel('openai'),
       temperature: 0.7,
-      apiKey: apiKey,
+      apiKey,
     });
     console.log(`  🔧 Using standard ChatOpenAI`);
   }
@@ -174,8 +174,8 @@ async function llmNode(state) {
 function decisionNode(state) {
   console.log('  🤔 [Decision Node] Making routing decision...');
 
-  const researchComplete = state.researchComplete;
-  const analysisComplete = state.analysisComplete;
+  const { researchComplete } = state;
+  const { analysisComplete } = state;
 
   // Simple routing logic
   if (!researchComplete) {

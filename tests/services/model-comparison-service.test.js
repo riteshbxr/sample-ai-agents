@@ -192,7 +192,7 @@ test('ModelComparisonService - compare models with streaming', async () => {
       const words = ['Streaming', 'response', 'from', 'OpenAI'];
       for (const word of words) {
         if (onChunk) {
-          onChunk(word + ' ');
+          onChunk(`${word} `);
           chunkCount++;
         }
       }

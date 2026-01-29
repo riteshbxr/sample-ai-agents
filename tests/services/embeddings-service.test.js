@@ -42,7 +42,7 @@ test('EmbeddingsService - getEmbeddings with multiple texts', async () => {
 test('EmbeddingsService - findSimilarDocuments', async () => {
   const service = new EmbeddingsService('mock');
   // Create embeddings where first document is similar to query
-  service.client.getEmbeddings = async (texts) => {
+  service.client.getEmbeddings = async (_texts) => {
     const queryEmbedding = new Array(1536).fill(0.5);
     const doc1Embedding = new Array(1536).fill(0.5); // Similar
     const doc2Embedding = new Array(1536).fill(0.1); // Different
@@ -73,7 +73,7 @@ test('EmbeddingsService - findSimilarDocuments with topK limit', async () => {
 
 test('EmbeddingsService - findSimilarDocuments with threshold', async () => {
   const service = new EmbeddingsService('mock');
-  service.client.getEmbeddings = async (texts) => {
+  service.client.getEmbeddings = async (_texts) => {
     const queryEmbedding = new Array(1536).fill(0.9);
     const doc1Embedding = new Array(1536).fill(0.9); // Very high similarity (cosine ~1.0)
     const doc2Embedding = new Array(1536).fill(0.1); // Low similarity (cosine ~0.1)

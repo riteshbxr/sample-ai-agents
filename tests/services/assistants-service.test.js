@@ -94,7 +94,7 @@ test('AssistantsService - run assistant', async () => {
     };
   };
 
-  service.client.getMessages = async (threadId) => [
+  service.client.getMessages = async (_threadId) => [
     {
       id: 'msg_456',
       role: 'assistant',
@@ -117,7 +117,7 @@ test('AssistantsService - get messages', async () => {
   const service = new AssistantsService();
   service.client = mockClient;
 
-  service.client.getMessages = async (threadId) => [
+  service.client.getMessages = async (_threadId) => [
     {
       id: 'msg_1',
       role: 'user',
